@@ -1,49 +1,1929 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Smard</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Smard.styles.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Smard</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <title>@ViewData["Title"]</title>
+    @await RenderSectionAsync("HeadStyles", required: false)
+    <style>
+        /* Audit details bar (Created / Updated user & time) */
+        .type-audit-bar {
+            display: flex;
+            align-items: center;
+            background: #ECFDF5;
+            border: 1px solid #86EFAC;
+            border-left: 5px solid #16A34A;
+            border-radius: 10px;
+            padding: 10px 18px;
+            margin: 16px 0;
+            gap: 14px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .type-audit-bar .audit-icon-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #16A34A;
+        }
+        .type-audit-bar .audit-items-wrap {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px 24px;
+            flex: 1;
+        }
+        .type-audit-bar .audit-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+        .type-audit-bar .audit-lbl {
+            font-weight: 800;
+            color: #15803D;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+        }
+        .type-audit-bar .audit-val {
+            font-weight: 600;
+            color: #166534;
+        }
+        @@media (max-width: 768px) {
+            .type-audit-bar {
+                padding: 10px 12px;
+                gap: 10px;
+            }
+            .type-audit-bar .audit-items-wrap {
+                gap: 6px 14px;
+            }
+            .type-audit-bar .audit-item {
+                font-size: 11px;
+            }
+        }
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Smard - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+        /* Type action buttons: Edit vs Save */
+        .type-edit-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 20px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #1565C0, #1976D2);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 3px 10px rgba(21, 101, 192, 0.35);
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+        }
+        .type-edit-btn:hover {
+            background: linear-gradient(135deg, #0D47A1, #1565C0);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(21, 101, 192, 0.45);
+        }
+        .type-edit-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Locked / Saved view mode for type blocks */
+        .wps-type-block.type-locked input:not([type="button"]):not([type="submit"]):not(.ct-amount),
+        .wps-type-block.type-locked textarea,
+        .wps-type-block.type-locked select,
+        .wps-type-block.type-locked .ct-input:not(.ct-amount),
+        .wps-type-block .ct-input:not(.ct-amount)[readonly],
+        input.ct-input:not(.ct-amount)[readonly] {
+            pointer-events: none !important;
+            background-color: #F8FAFC !important;
+            color: #1E293B !important;
+            border-color: #E2E8F0 !important;
+            cursor: default !important;
+            user-select: text;
+            font-weight: 400 !important; /* Normal weight - not bold */
+        }
+
+        /* Normal font weight for cost table text inputs */
+        .cost-table input:not(.ct-amount):not(.total-val),
+        .cost-table .ct-input:not(.ct-amount),
+        .wps-type-block input.ct-input:not(.ct-amount),
+        .wps-type-block input[type="text"]:not(.ct-amount) {
+            font-weight: 400 !important;
+        }
+
+        /* In locked/saved mode: empty fields display as completely blank (no visible placeholder text) */
+        .wps-type-block.type-locked input::placeholder,
+        .wps-type-block.type-locked textarea::placeholder,
+        .wps-type-block.type-locked .ct-input::placeholder,
+        .wps-type-block.type-locked input::-webkit-input-placeholder,
+        .wps-type-block.type-locked textarea::-webkit-input-placeholder,
+        .wps-type-block.type-locked .ct-input::-webkit-input-placeholder {
+            color: transparent !important;
+            opacity: 0 !important;
+            -webkit-text-fill-color: transparent !important;
+        }
+
+        /* In active edit mode: placeholders display gently in normal font weight */
+        .cost-table input:not(.ct-amount)::placeholder,
+        .cost-table .ct-input:not(.ct-amount)::placeholder,
+        .wps-type-block.type-editing input::placeholder,
+        .wps-type-block.type-editing .ct-input::placeholder {
+            font-weight: 400 !important;
+            color: #94A3B8 !important;
+            opacity: 1 !important;
+            -webkit-text-fill-color: #94A3B8 !important;
+        }
+
+        .wps-type-block.type-locked .ct-add-row-btn,
+        .wps-type-block.type-locked .ct-add-btn,
+        .wps-type-block.type-locked button[onclick*="addMatRow"],
+        .wps-type-block.type-locked button[onclick*="addLabRow"],
+        .wps-type-block.type-locked .cost-copy-btn,
+        .wps-type-block.type-locked .ct-del-btn {
+            display: none !important;
+        }
+
+        /* Cost table action button styles (Add Row & Copy from TYPE) */
+        .cost-add-wrap {
+            padding: 14px 0 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .cost-copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 18px;
+            border-radius: 8px;
+            background: #007C6E;
+            color: #ffffff;
+            font-size: 12.5px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 3px 10px rgba(0, 124, 110, 0.25);
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+        }
+        .cost-copy-btn:hover {
+            background: #00665B;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(0, 124, 110, 0.35);
+        }
+        .cost-copy-btn:active {
+            transform: translateY(0);
+        }
+        .cost-copy-btn.cost-clear-btn {
+            background: #DC2626;
+            box-shadow: 0 3px 10px rgba(220, 38, 38, 0.25);
+        }
+        .cost-copy-btn.cost-clear-btn:hover {
+            background: #B91C1C;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 14px rgba(220, 38, 38, 0.35);
+        }
+        .cost-copy-btn svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        /* Material & Labour Cost Tables - Column Alignment & Highlight Box */
+        .cost-table th:nth-child(1),
+        .cost-table td:nth-child(1),
+        .cost-table th:nth-child(4),
+        .cost-table td:nth-child(4),
+        .cost-table th:nth-child(5),
+        .cost-table td:nth-child(5),
+        .cost-table th:nth-child(6),
+        .cost-table td:nth-child(6),
+        .cost-table th:nth-child(7),
+        .cost-table td:nth-child(7),
+        .cost-table th:nth-child(9),
+        .cost-table td:nth-child(9) {
+            text-align: center !important;
+        }
+
+        .cost-table th:nth-child(7),
+        .cost-table td:nth-child(7) {
+            width: 120px !important;
+            min-width: 110px !important;
+        }
+
+        /* Center numbers and text inside Cost Table inputs (Unit, Qnty, Unit Rate) */
+        .cost-table td:nth-child(4) input,
+        .cost-table td:nth-child(5) input,
+        .cost-table td:nth-child(6) input,
+        .cost-table td:nth-child(4) .ct-input,
+        .cost-table td:nth-child(5) .ct-input,
+        .cost-table td:nth-child(6) .ct-input,
+        .cost-table .ct-input-unit,
+        .cost-table .ct-input-sm,
+        .wps-type-block .cost-table td:nth-child(4) input,
+        .wps-type-block .cost-table td:nth-child(5) input,
+        .wps-type-block .cost-table td:nth-child(6) input {
+            text-align: center !important;
+            margin: 0 auto !important;
+        }
+
+        .cost-table input.ct-amount,
+        .cost-table .ct-input.ct-amount,
+        .cost-table .ct-input-sm.ct-amount,
+        .ct-amount,
+        input.ct-amount,
+        .wps-type-block input.ct-amount,
+        .wps-type-block.type-locked input.ct-amount {
+            width: 105px !important;
+            min-width: 95px !important;
+            max-width: 125px !important;
+            height: 34px !important;
+            background: #EBF4FE !important;
+            background-color: #EBF4FE !important;
+            border: 1.5px solid #BFDBFE !important;
+            border-radius: 6px !important;
+            color: #1545A6 !important;
+            font-size: 13.5px !important;
+            font-weight: 700 !important;
+            text-align: center !important;
+            padding: 0 8px !important;
+            box-sizing: border-box !important;
+            margin: 0 auto !important;
+            display: block !important;
+            cursor: default !important;
+            user-select: text !important;
+            pointer-events: none !important;
+            box-shadow: inset 0 1px 2px rgba(21, 69, 166, 0.04) !important;
+        }
+
+        /* Center Delete Button in Action column */
+        .cost-table td:nth-child(9) .ct-del-btn,
+        .cost-table .ct-del-btn {
+            margin: 0 auto !important;
+        }
+
+        .cost-total-row td.total-val {
+            min-width: 105px !important;
+            width: 120px !important;
+            text-align: center !important;
+            color: #DC2626 !important;
+            font-size: 14px !important;
+            font-weight: 800 !important;
+            background: #FFE4E6 !important;
+        }
+
+        /* Information Card Size Dimensions (Length, Height, Width, Depth, etc.) - Center Align */
+        .wps-size-input,
+        input.wps-size-input,
+        .wps-type-block input.wps-size-input,
+        .wps-type-block.type-locked input.wps-size-input {
+            text-align: center !important;
+            padding: 0 4px !important;
+        }
+
+        /* Information Card Area Box - Center Content */
+        .wps-area-box,
+        div.wps-area-box,
+        .wps-type-block .wps-area-box {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+
+        /* With Profit Table: SL NO, %, and Amount Columns Centering */
+        .profit-table th:nth-child(1),
+        .profit-table td:nth-child(1),
+        .profit-table th:nth-child(3),
+        .profit-table td:nth-child(3),
+        .profit-table th:nth-child(4),
+        .profit-table td:nth-child(4) {
+            text-align: center !important;
+        }
+
+        .profit-table td:nth-child(3) .pct-input-wrap,
+        .profit-table .pct-input-wrap {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 auto !important;
+        }
+
+        .profit-table .pct-input {
+            text-align: center !important;
+        }
+
+        .profit-table .profit-amount {
+            text-align: center !important;
+        }
+
+        /* Action Toasts (Created, Updated, Deleted) at Top Right matching smardhomes design */
+        #smard-toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+            max-width: 440px;
+            width: calc(100vw - 48px);
+        }
+
+        .smard-toast-card {
+            pointer-events: auto;
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.28), 0 4px 12px -2px rgba(0, 0, 0, 0.16);
+            color: #ffffff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .smard-toast-card.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .smard-toast-card.hide {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+
+        .smard-toast-icon-circle {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .smard-toast-content {
+            flex: 1;
+            min-width: 0;
+            padding-right: 18px;
+        }
+
+        .smard-toast-title-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.3;
+            letter-spacing: 0.1px;
+        }
+
+        .smard-toast-title-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .smard-toast-msg {
+            font-size: 12.5px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.45;
+            margin-top: 4px;
+            letter-spacing: 0.05px;
+        }
+
+        .smard-toast-msg strong {
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .smard-toast-close {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s ease, transform 0.15s ease;
+        }
+
+        .smard-toast-close:hover {
+            color: #ffffff;
+            transform: scale(1.15);
+        }
+
+        /* Floating Quick Action Dock on Right Screen Edge (Edit, Save, Cancel, Delete) */
+        .smard-floating-dock {
+            position: fixed;
+            right: 0;
+            top: 48%;
+            transform: translateY(-50%);
+            z-index: 99990;
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.35);
+            padding: 6px 5px 8px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .smard-floating-dock .dock-type-label {
+            font-size: 8.5px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            color: #94A3B8;
+            text-transform: uppercase;
+            padding: 2px 2px 1px 2px;
+            text-align: center;
+            line-height: 1;
+            font-family: 'Inter', -apple-system, sans-serif;
+            user-select: none;
+        }
+
+        .smard-floating-dock .dock-actions-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .smard-floating-dock .dock-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 7px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            outline: none;
+            transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .smard-floating-dock .dock-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .smard-floating-dock .dock-btn:active {
+            transform: scale(0.96);
+        }
+
+        .smard-floating-dock .dock-btn-edit {
+            background: #1D4ED8;
+            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.35);
+        }
+        .smard-floating-dock .dock-btn-edit:hover {
+            background: #2563EB;
+        }
+
+        .smard-floating-dock .dock-btn-save {
+            background: #059669;
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);
+        }
+        .smard-floating-dock .dock-btn-save:hover {
+            background: #10B981;
+        }
+
+        .smard-floating-dock .dock-btn-cancel {
+            background: #334155;
+            box-shadow: 0 2px 8px rgba(51, 65, 85, 0.35);
+        }
+        .smard-floating-dock .dock-btn-cancel:hover {
+            background: #475569;
+        }
+
+        .smard-floating-dock .dock-btn-delete {
+            background: #DC2626;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+        }
+        .smard-floating-dock .dock-btn-delete:hover {
+            background: #EF4444;
+        }
+
+        /* Tooltip displayed to the left on hover */
+        .smard-floating-dock .dock-tooltip {
+            position: absolute;
+            right: calc(100% + 8px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: #0F172A;
+            color: #FFFFFF;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Inter', -apple-system, sans-serif;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 99999;
+        }
+
+        .smard-floating-dock .dock-btn:hover .dock-tooltip {
+            opacity: 1;
+        }
+
+        /* === TOP-RIGHT PROFILE & NOTIFICATION BELL === */
+        .topright-profile {
+            position: fixed !important;
+            top: 12px !important;
+            right: 20px !important;
+            z-index: 99990 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+        }
+
+        .notif-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .notif-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #E8F1FD;
+            border: 1px solid #D0E3F9;
+            color: #1565C0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(21, 101, 192, 0.08);
+            padding: 0;
+        }
+
+        .notif-btn:hover {
+            background: #D9E8FC;
+            transform: translateY(-1.5px);
+            box-shadow: 0 4px 12px rgba(21, 101, 192, 0.2);
+            color: #0D47A1;
+        }
+
+        .notif-btn:active {
+            transform: translateY(0);
+        }
+
+        .notif-bell-icon {
+            width: 20px;
+            height: 20px;
+            fill: #1976D2;
+            transition: transform 0.2s ease;
+        }
+
+        .notif-btn:hover .notif-bell-icon {
+            transform: rotate(8deg);
+        }
+
+        .notif-badge-dot,
+        .notif-badge-pill {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4.5px;
+            background: #DC2626;
+            color: #ffffff;
+            font-size: 10.5px;
+            font-weight: 700;
+            border-radius: 9999px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            box-sizing: border-box;
+            animation: pulseDot 2s infinite;
+        }
+
+        .notif-badge-dot.hidden,
+        .notif-badge-pill.hidden {
+            display: none !important;
+        }
+
+        @@keyframes pulseDot {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Notification Dropdown Panel */
+        .notif-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 340px;
+            background: #ffffff;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.16);
+            z-index: 100000;
+            overflow: hidden;
+            animation: notifFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        .notif-dropdown.show {
+            display: block !important;
+        }
+
+        @@keyframes notifFadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .notif-dd-header {
+            padding: 13px 18px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #FAFAFF;
+        }
+
+        .notif-dd-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notif-dd-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .notif-dd-pill {
+            padding: 2px 8px;
+            background: #EEF2FF;
+            color: #4F46E5;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 9999px;
+        }
+
+        .notif-dd-mark-read {
+            background: none;
+            border: none;
+            color: #1976D2;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+
+        .notif-dd-mark-read:hover {
+            background: #EEF2FF;
+        }
+
+        .notif-dd-body {
+            max-height: 320px;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 18px;
+            border-bottom: 1px solid #F1F5F9;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+
+        .notif-item:last-child {
+            border-bottom: none;
+        }
+
+        .notif-item:hover {
+            background: #F8FAFC;
+        }
+
+        .notif-item.unread {
+            background: #F8FAFF;
+        }
+
+        .notif-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .notif-item-icon.blue { background: #E0EDFF; color: #1976D2; }
+        .notif-item-icon.green { background: #ECFDF5; color: #059669; }
+        .notif-item-icon.purple { background: #F3E8FF; color: #7C3AED; }
+        .notif-item-icon.rose { background: #FFE4E6; color: #E11D48; }
+        .notif-item-icon svg { width: 16px; height: 16px; }
+
+        .notif-unread-dot {
+            width: 7px;
+            height: 7px;
+            background: #4F46E5;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+
+        .notif-item-dismiss {
+            background: none;
+            border: none;
+            color: #94A3B8;
+            font-size: 16px;
+            line-height: 1;
+            padding: 0 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .notif-item-dismiss:hover {
+            color: #EF4444;
+            background: #FEE2E2;
+        }
+
+        .notif-item-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notif-item-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1E293B;
+            line-height: 1.35;
+            margin-bottom: 2px;
+        }
+
+        .notif-item-desc {
+            font-size: 11.5px;
+            color: #64748B;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+
+        .notif-item-time {
+            font-size: 10.5px;
+            color: #94A3B8;
+            font-weight: 500;
+        }
+
+        .notif-dd-footer {
+            padding: 10px 18px;
+            border-top: 1px solid #E2E8F0;
+            background: #F8FAFC;
+            text-align: center;
+        }
+
+        .notif-dd-footer-text {
+            font-size: 11px;
+            color: #64748B;
+            font-weight: 600;
+        }
+
+        /* ========================================================
+           DELETE REQUESTS NAVBAR BUTTON & DROPDOWN (Image 1 & 3)
+        ======================================================== */
+        .req-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .req-nav-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #EA580C;
+            border: 1px solid #C2410C;
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(234, 88, 12, 0.28);
+            padding: 0;
+        }
+
+        .req-nav-btn:hover {
+            background: #D9480F;
+            transform: translateY(-1.5px);
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+        }
+
+        .req-nav-btn:active {
+            transform: translateY(0);
+        }
+
+        .req-nav-icon {
+            width: 19px;
+            height: 19px;
+            fill: #ffffff;
+            transition: transform 0.2s ease;
+        }
+
+        .req-nav-btn:hover .req-nav-icon {
+            transform: scale(1.08);
+        }
+
+        .req-badge-pill {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4.5px;
+            background: #DC2626;
+            color: #ffffff;
+            font-size: 10.5px;
+            font-weight: 700;
+            border-radius: 9999px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            box-sizing: border-box;
+            animation: pulseDot 2s infinite;
+        }
+
+        .req-badge-pill.hidden {
+            display: none !important;
+        }
+
+        /* Delete Requests Dropdown (Image 3 Reference) */
+        .req-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px);
+            right: -80px;
+            width: 440px;
+            max-width: 92vw;
+            background: #FFFBF7;
+            border: 1.5px solid #FED7AA;
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.2);
+            z-index: 100000;
+            overflow: hidden;
+            animation: notifFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        .req-dropdown.show {
+            display: block;
+        }
+
+        .req-dd-header {
+            background: #EA580C;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #ffffff;
+        }
+
+        .req-dd-title-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .req-dd-header-icon {
+            width: 20px;
+            height: 20px;
+            fill: #ffffff;
+        }
+
+        .req-dd-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+
+        .req-dd-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .req-dd-close:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.08);
+        }
+
+        .req-dd-body {
+            padding: 14px;
+            max-height: 480px;
+            overflow-y: auto;
+            background: #FFFBF7;
+        }
+
+        .req-item-card {
+            background: #FFF7ED;
+            border: 1px solid #FFEDD5;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(234, 88, 12, 0.06);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .req-item-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .req-item-card:hover {
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.12);
+        }
+
+        .req-card-top-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .req-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #EA580C;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25);
+        }
+
+        .req-user-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .req-user-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0F172A;
+            line-height: 1.25;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .req-master-name {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #64748B;
+            font-weight: 600;
+        }
+
+        .req-timestamp {
+            font-size: 11px;
+            color: #94A3B8;
+            font-weight: 500;
+            white-space: nowrap;
+            margin-left: auto;
+        }
+
+        .req-type-pill {
+            background: #E0F2FE;
+            color: #0369A1;
+            border: 1px solid #BAE6FD;
+            border-radius: 8px;
+            padding: 7px 12px;
+            margin: 11px 0 13px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .req-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .req-btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6.5px 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            line-height: 1.2;
+            border: none;
+        }
+
+        .req-btn-view {
+            background: #F1F5F9;
+            color: #334155;
+            border: 1px solid #E2E8F0;
+        }
+
+        .req-btn-view:hover {
+            background: #E2E8F0;
+            color: #0F172A;
+        }
+
+        .req-btn-approve {
+            background: #059669;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2);
+        }
+
+        .req-btn-approve:hover {
+            background: #047857;
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
+            transform: translateY(-0.5px);
+        }
+
+        .req-btn-reject {
+            background: #DC2626;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+        }
+
+        .req-btn-reject:hover {
+            background: #B91C1C;
+            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+            transform: translateY(-0.5px);
+        }
+
+        .req-empty-state {
+            padding: 30px 16px;
+            text-align: center;
+            color: #64748B;
+        }
+
+        /* ========================================================
+           REJECT DELETE REQUEST MODAL (Image 4 Reference)
+        ======================================================== */
+        .reject-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 1000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: notifFadeIn 0.2s ease;
+        }
+
+        .reject-modal-card {
+            background: #ffffff;
+            border-radius: 20px;
+            width: 440px;
+            max-width: 92vw;
+            padding: 32px 28px 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            text-align: center;
+            font-family: 'Inter', -apple-system, sans-serif;
+            animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @@keyframes modalPop {
+            0% { transform: scale(0.92); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .reject-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            font-size: 22px;
+            color: #94A3B8;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            transition: color 0.15s ease;
+        }
+
+        .reject-modal-close:hover {
+            color: #0F172A;
+        }
+
+        .reject-modal-icon-wrap {
+            margin-bottom: 16px;
+        }
+
+        .reject-modal-icon-circle {
+            width: 58px;
+            height: 58px;
+            background: #EF4444;
+            border-radius: 50%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+        }
+
+        .reject-modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0F172A;
+            margin: 0 0 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .reject-modal-subtitle {
+            font-size: 13.5px;
+            color: #64748B;
+            line-height: 1.45;
+            margin: 0 0 22px;
+        }
+
+        .reject-form-label {
+            display: block;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+
+        .reject-form-label .req-asterisk {
+            color: #EF4444;
+        }
+
+        .reject-form-textarea {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13.5px;
+            color: #1E293B;
+            outline: none;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 84px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .reject-form-textarea:focus {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .reject-form-error {
+            color: #DC2626;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: left;
+            margin-top: 6px;
+        }
+
+        .reject-modal-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-reject-modal-cancel {
+            background: #F1F5F9;
+            color: #334155;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .btn-reject-modal-cancel:hover {
+            background: #E2E8F0;
+        }
+
+        .btn-reject-modal-submit {
+            background: #DC2626;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+            transition: background 0.15s ease;
+        }
+
+        .btn-reject-modal-submit:hover {
+            background: #B91C1C;
+        }
+
+        .req-pending-pill {
+            background: #FFF7ED;
+            color: #C2410C;
+            border: 1px solid #FED7AA;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            margin-left: 10px;
+            display: inline-flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body style="margin:0;padding:0;overflow:hidden;">
+    @RenderBody()
     @await RenderSectionAsync("Scripts", required: false)
+    @if (ViewBag.InitialMasterRecordsJson != null)
+    {
+        <script id="smard-initial-data">
+            window.initialMasterRecords = @Html.Raw(ViewBag.InitialMasterRecordsJson);
+        </script>
+    }
+    <script src="~/js/master-persistence.js" asp-append-version="true"></script>
+    <script>
+        function toggleNotifMenu(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var dd = document.getElementById('notif-dropdown');
+            var pdd = document.getElementById('profile-dropdown');
+            if (pdd) pdd.classList.remove('show');
+            if (dd) {
+                var isOpening = !dd.classList.contains('show');
+                dd.classList.toggle('show');
+                if (isOpening) {
+                    loadNotifications();
+                }
+            }
+        }
+
+        function loadNotifications() {
+            var listEl = document.getElementById('notif-list');
+            if (!listEl) return;
+
+            fetch('/Notifications/GetRecent')
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Network error');
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (!data.success) return;
+
+                    var unreadCount = data.unreadCount || 0;
+                    var pill = document.getElementById('notif-dd-pill');
+                    if (pill) pill.textContent = unreadCount + ' New';
+
+                    var badgeDot = document.getElementById('notif-badge-dot');
+                    if (badgeDot) {
+                        badgeDot.textContent = unreadCount;
+                        if (unreadCount > 0) badgeDot.classList.remove('hidden');
+                        else badgeDot.classList.add('hidden');
+                    }
+
+                    if (!data.notifications || data.notifications.length === 0) {
+                        listEl.innerHTML = '<div class="notif-empty-state" style="padding:28px 16px;text-align:center;color:#64748B;">' +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" style="width:36px;height:36px;margin:0 auto 10px;display:block;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' +
+                            '<div style="font-size:13px;font-weight:600;color:#334155;margin-bottom:4px;">No notifications yet</div>' +
+                            '<div style="font-size:11.5px;color:#94A3B8;">Master creations and updates will appear here.</div>' +
+                            '</div>';
+                        return;
+                    }
+
+                    var html = '';
+                    data.notifications.forEach(function(item) {
+                        var isUnread = !item.isRead;
+                        var typeLower = (item.notifType || '').toLowerCase();
+                        var iconColor = 'blue';
+                        var iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>';
+
+                        if (typeLower === 'create' || typeLower === 'add') {
+                            iconColor = 'blue';
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>';
+                        } else if (typeLower === 'update') {
+                            iconColor = 'purple';
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>';
+                        } else if (typeLower === 'delete') {
+                            iconColor = 'rose';
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+                        } else {
+                            iconColor = 'green';
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+                        }
+
+                        var safeTitle = escapeHtml(item.title);
+                        var safeMsg = escapeHtml(item.message);
+                        var safeDate = escapeHtml(item.createdOn);
+                        var safeTimeAgo = item.timeAgo ? escapeHtml(item.timeAgo) : '';
+                        var actionUrl = (item.actionUrl || '').replace(/'/g, "\\'");
+
+                        html += '<div class="notif-item ' + (isUnread ? 'unread' : '') + '" data-id="' + item.id + '" onclick="handleNotifClick(' + item.id + ', \'' + actionUrl + '\', event)">' +
+                            '<div class="notif-item-icon ' + iconColor + '">' + iconSvg + '</div>' +
+                            '<div class="notif-item-details">' +
+                                '<div class="notif-item-title-row" style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">' +
+                                    '<div class="notif-item-title">' + safeTitle + '</div>' +
+                                    '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">' +
+                                        (isUnread ? '<span class="notif-unread-dot" title="Unread"></span>' : '') +
+                                        '<button type="button" class="notif-item-dismiss" onclick="dismissNotification(' + item.id + ', event)" title="Dismiss">&times;</button>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="notif-item-desc">' + safeMsg + '</div>' +
+                                '<div class="notif-item-time" style="display:flex;align-items:center;justify-content:space-between;">' +
+                                    '<span>' + safeDate + '</span>' +
+                                    (safeTimeAgo ? '<span style="font-size:10px;color:#94a3b8;font-weight:500;">' + safeTimeAgo + '</span>' : '') +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+                    });
+
+                    listEl.innerHTML = html;
+                })
+                .catch(function(err) {
+                    console.error('Failed to load notifications', err);
+                });
+        }
+
+        function markAllNotificationsRead(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            fetch('/Notifications/MarkAllAsRead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var dot = document.getElementById('notif-badge-dot');
+                    if (dot) {
+                        dot.textContent = '0';
+                        dot.classList.add('hidden');
+                    }
+                    var unreads = document.querySelectorAll('.notif-item.unread');
+                    unreads.forEach(function(item) { item.classList.remove('unread'); });
+                    var dots = document.querySelectorAll('.notif-unread-dot');
+                    dots.forEach(function(d) { d.remove(); });
+                    var pill = document.getElementById('notif-dd-pill');
+                    if (pill) pill.textContent = '0 New';
+                }
+            }).catch(function(err) {
+                console.error('Error marking notifications as read', err);
+            });
+        }
+
+        function handleNotifClick(id, actionUrl, e) {
+            if (e && e.target && e.target.closest('.notif-item-dismiss')) {
+                return;
+            }
+            fetch('/Notifications/MarkAsRead?id=' + id, { method: 'POST' })
+                .catch(function(err) { console.error('Error marking as read', err); });
+
+            var item = document.querySelector('.notif-item[data-id="' + id + '"]');
+            if (item) {
+                item.classList.remove('unread');
+                var dot = item.querySelector('.notif-unread-dot');
+                if (dot) dot.remove();
+            }
+
+            var unreadCount = document.querySelectorAll('.notif-item.unread').length;
+            var pill = document.getElementById('notif-dd-pill');
+            if (pill) pill.textContent = unreadCount + ' New';
+            var badgeDot = document.getElementById('notif-badge-dot');
+            if (badgeDot) {
+                badgeDot.textContent = unreadCount;
+                if (unreadCount > 0) badgeDot.classList.remove('hidden');
+                else badgeDot.classList.add('hidden');
+            }
+
+            if (actionUrl && actionUrl.trim() !== '' && actionUrl !== 'null') {
+                window.location.href = actionUrl;
+            }
+        }
+
+        function dismissNotification(id, e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var item = document.querySelector('.notif-item[data-id="' + id + '"]');
+            if (item) {
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(10px)';
+                item.style.transition = 'all 0.2s ease';
+                setTimeout(function() {
+                    item.remove();
+                    var unreadCount = document.querySelectorAll('.notif-item.unread').length;
+                    var pill = document.getElementById('notif-dd-pill');
+                    if (pill) pill.textContent = unreadCount + ' New';
+                    var badgeDot = document.getElementById('notif-badge-dot');
+                    if (badgeDot) {
+                        badgeDot.textContent = unreadCount;
+                        if (unreadCount > 0) badgeDot.classList.remove('hidden');
+                        else badgeDot.classList.add('hidden');
+                    }
+                }, 200);
+            }
+            fetch('/Notifications/Delete?id=' + id, { method: 'POST' })
+                .catch(function(err) { console.error('Error dismissing notification', err); });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        /* ========================================================
+           DELETE REQUESTS LOGIC (Image 3 & 4)
+        ======================================================== */
+        var currentRejectRequestId = null;
+
+        function toggleReqMenu(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var rdd = document.getElementById('req-dropdown');
+            var ndd = document.getElementById('notif-dropdown');
+            var pdd = document.getElementById('profile-dropdown');
+            if (ndd) ndd.classList.remove('show');
+            if (pdd) pdd.classList.remove('show');
+
+            if (rdd) {
+                var isOpening = !rdd.classList.contains('show');
+                rdd.classList.toggle('show');
+                if (isOpening) {
+                    loadDeleteRequests();
+                }
+            }
+        }
+
+        function closeReqMenu(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var rdd = document.getElementById('req-dropdown');
+            if (rdd) rdd.classList.remove('show');
+        }
+
+        function loadDeleteRequests() {
+            var listEl = document.getElementById('req-list');
+            if (!listEl) return;
+
+            fetch('/DeleteRequests/GetPending')
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Network error');
+                    return res.json();
+                })
+                .then(function(data) {
+                    var count = data.count || 0;
+                    var badgePill = document.getElementById('req-badge-pill');
+                    if (badgePill) {
+                        badgePill.textContent = count;
+                        if (count > 0) badgePill.classList.remove('hidden');
+                        else badgePill.classList.add('hidden');
+                    }
+
+                    if (!data.requests || data.requests.length === 0) {
+                        listEl.innerHTML = '<div class="req-empty-state">' +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" style="width:36px;height:36px;margin:0 auto 10px;display:block;">' +
+                            '<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 10h-4c0 1.66-1.34 3-3 3s-3-1.34-3-3H5V5h14v8z"/>' +
+                            '</svg>' +
+                            '<div style="font-size:13px;font-weight:600;color:#334155;margin-bottom:4px;">No delete requests</div>' +
+                            '<div style="font-size:11.5px;color:#94A3B8;">Pending requests will appear here for Admin review.</div>' +
+                            '</div>';
+                        return;
+                    }
+
+                    var html = '';
+                    data.requests.forEach(function(req) {
+                        var safeUser = escapeHtml(req.requestedByUserName);
+                        var safeMaster = escapeHtml(req.masterName);
+                        var safeType = escapeHtml(req.typeName);
+                        var safeDate = escapeHtml(req.requestedOn);
+                        var actionUrl = (req.actionUrl || ('/' + req.controllerName));
+
+                        html += '<div class="req-item-card" data-req-id="' + req.id + '">' +
+                            '<div class="req-card-top-row">' +
+                                '<div class="req-avatar">' +
+                                    '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">' +
+                                        '<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>' +
+                                    '</svg>' +
+                                '</div>' +
+                                '<div class="req-user-info">' +
+                                    '<div class="req-user-name">' + safeUser + '</div>' +
+                                    '<div class="req-master-name">' +
+                                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">' +
+                                            '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>' +
+                                        '</svg>' +
+                                        '<span>' + safeMaster + '</span>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="req-timestamp">' + safeDate + '</div>' +
+                            '</div>' +
+                            '<div class="req-type-pill">' +
+                                '<svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">' +
+                                    '<path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>' +
+                                '</svg>' +
+                                '<span>TYPE ' + req.typeIndex + ' &mdash; &ldquo;' + safeType + '&rdquo;</span>' +
+                            '</div>' +
+                            '<div class="req-card-actions">' +
+                                '<a href="' + actionUrl + '" class="req-btn-action req-btn-view">' +
+                                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">' +
+                                        '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>' +
+                                        '<circle cx="12" cy="12" r="3"/>' +
+                                    '</svg>' +
+                                    '<span>View</span>' +
+                                '</a>' +
+                                '<button type="button" class="req-btn-action req-btn-approve" onclick="approveDeleteRequest(' + req.id + ', event)">' +
+                                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">' +
+                                        '<polyline points="20 6 9 17 4 12"/>' +
+                                    '</svg>' +
+                                    '<span>Approve</span>' +
+                                '</button>' +
+                                '<button type="button" class="req-btn-action req-btn-reject" onclick="openRejectModal(' + req.id + ', \'' + safeType.replace(/'/g, "\\'") + '\', event)">' +
+                                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">' +
+                                        '<circle cx="12" cy="12" r="10"/>' +
+                                        '<line x1="15" y1="9" x2="9" y2="15"/>' +
+                                        '<line x1="9" y1="9" x2="15" y2="15"/>' +
+                                    '</svg>' +
+                                    '<span>Reject</span>' +
+                                '</button>' +
+                            '</div>' +
+                        '</div>';
+                    });
+
+                    listEl.innerHTML = html;
+                })
+                .catch(function(err) {
+                    console.error('Failed to load delete requests', err);
+                });
+        }
+
+        function approveDeleteRequest(id, e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var card = document.querySelector('.req-item-card[data-req-id="' + id + '"]');
+            var approveBtn = card ? card.querySelector('.req-btn-approve') : null;
+            if (approveBtn) {
+                approveBtn.disabled = true;
+                approveBtn.textContent = 'Approving...';
+            }
+
+            fetch('/DeleteRequests/Approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    if (typeof showActionToast === 'function') {
+                        showActionToast('deleted', {
+                            masterName: 'Delete Request',
+                            message: data.message || 'Delete request approved and record removed.'
+                        });
+                    }
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.95)';
+                        card.style.transition = 'all 0.2s ease';
+                        setTimeout(function() {
+                            card.remove();
+                            decrementReqBadge();
+                        }, 200);
+                    }
+                } else {
+                    alert(data.message || 'Failed to approve request.');
+                    if (approveBtn) {
+                        approveBtn.disabled = false;
+                        approveBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg><span>Approve</span>';
+                    }
+                }
+            })
+            .catch(function(err) {
+                alert('Network error approving delete request.');
+                if (approveBtn) {
+                    approveBtn.disabled = false;
+                    approveBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg><span>Approve</span>';
+                }
+            });
+        }
+
+        function openRejectModal(id, typeName, e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            currentRejectRequestId = id;
+            var modal = document.getElementById('reject-delete-modal');
+            var textarea = document.getElementById('reject-reason-input');
+            var errEl = document.getElementById('reject-reason-error');
+            if (textarea) {
+                textarea.value = '';
+                textarea.style.borderColor = '#CBD5E1';
+            }
+            if (errEl) errEl.style.display = 'none';
+
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(function() {
+                    if (textarea) textarea.focus();
+                }, 100);
+            }
+        }
+
+        function closeRejectModal() {
+            var modal = document.getElementById('reject-delete-modal');
+            if (modal) modal.style.display = 'none';
+            currentRejectRequestId = null;
+        }
+
+        function handleRejectBackdropClick(e) {
+            if (e.target && e.target.id === 'reject-delete-modal') {
+                closeRejectModal();
+            }
+        }
+
+        function submitRejectDeleteRequest() {
+            if (!currentRejectRequestId) return;
+            var textarea = document.getElementById('reject-reason-input');
+            var errEl = document.getElementById('reject-reason-error');
+            var reason = textarea ? textarea.value.trim() : '';
+
+            if (!reason) {
+                if (errEl) errEl.style.display = 'block';
+                if (textarea) {
+                    textarea.style.borderColor = '#DC2626';
+                    textarea.focus();
+                }
+                return;
+            }
+
+            var submitBtn = document.getElementById('btn-reject-modal-submit');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Rejecting...';
+            }
+
+            fetch('/DeleteRequests/Reject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: currentRejectRequestId, reason: reason })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>Reject Request</span>';
+                }
+
+                if (data.success) {
+                    var card = document.querySelector('.req-item-card[data-req-id="' + currentRejectRequestId + '"]');
+                    if (card) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.95)';
+                        card.style.transition = 'all 0.2s ease';
+                        setTimeout(function() {
+                            card.remove();
+                            decrementReqBadge();
+                        }, 200);
+                    }
+                    closeRejectModal();
+                    if (typeof showActionToast === 'function') {
+                        showActionToast('info', {
+                            masterName: 'Delete Request',
+                            message: data.message || 'Delete request rejected.'
+                        });
+                    }
+                } else {
+                    alert(data.message || 'Failed to reject delete request.');
+                }
+            })
+            .catch(function(err) {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>Reject Request</span>';
+                }
+                alert('Network error rejecting delete request.');
+            });
+        }
+
+        function decrementReqBadge() {
+            var cards = document.querySelectorAll('.req-item-card');
+            var badgePill = document.getElementById('req-badge-pill');
+            var count = cards.length;
+            if (badgePill) {
+                badgePill.textContent = count;
+                if (count > 0) badgePill.classList.remove('hidden');
+                else badgePill.classList.add('hidden');
+            }
+            if (count === 0) {
+                var listEl = document.getElementById('req-list');
+                if (listEl) {
+                    listEl.innerHTML = '<div class="req-empty-state">' +
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" style="width:36px;height:36px;margin:0 auto 10px;display:block;">' +
+                        '<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 10h-4c0 1.66-1.34 3-3 3s-3-1.34-3-3H5V5h14v8z"/>' +
+                        '</svg>' +
+                        '<div style="font-size:13px;font-weight:600;color:#334155;margin-bottom:4px;">No delete requests</div>' +
+                        '<div style="font-size:11.5px;color:#94A3B8;">Pending requests will appear here for Admin review.</div>' +
+                        '</div>';
+                }
+            }
+        }
+
+        function toggleProfileMenu(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var dd = document.getElementById('profile-dropdown');
+            var ndd = document.getElementById('notif-dropdown');
+            var rdd = document.getElementById('req-dropdown');
+            if (ndd) ndd.classList.remove('show');
+            if (rdd) rdd.classList.remove('show');
+            if (dd) dd.classList.toggle('show');
+        }
+
+        function toggleNotifMenu(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            var dd = document.getElementById('notif-dropdown');
+            var pdd = document.getElementById('profile-dropdown');
+            var rdd = document.getElementById('req-dropdown');
+            if (pdd) pdd.classList.remove('show');
+            if (rdd) rdd.classList.remove('show');
+            if (dd) {
+                var isOpening = !dd.classList.contains('show');
+                dd.classList.toggle('show');
+                if (isOpening) {
+                    loadNotifications();
+                }
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            var reqWrapper = document.getElementById('req-wrapper');
+            if (reqWrapper && !reqWrapper.contains(e.target)) {
+                var rdd = document.getElementById('req-dropdown');
+                if (rdd) rdd.classList.remove('show');
+            }
+            var notifWrapper = document.getElementById('notif-wrapper');
+            if (notifWrapper && !notifWrapper.contains(e.target)) {
+                var dd = document.getElementById('notif-dropdown');
+                if (dd) dd.classList.remove('show');
+            }
+            var profileArea = document.getElementById('profile-area');
+            if (profileArea && !profileArea.contains(e.target)) {
+                var pdd = document.getElementById('profile-dropdown');
+                if (pdd) pdd.classList.remove('show');
+            }
+        });
+
+        // Periodic check for new notifications & requests every 25 seconds
+        setInterval(function() {
+            var dd = document.getElementById('notif-dropdown');
+            if (dd && dd.classList.contains('show')) {
+                loadNotifications();
+            } else {
+                fetch('/Notifications/GetRecent')
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (!data.success) return;
+                        var unread = data.unreadCount || 0;
+                        var pill = document.getElementById('notif-dd-pill');
+                        if (pill) pill.textContent = unread + ' New';
+                        var badgeDot = document.getElementById('notif-badge-dot');
+                        if (badgeDot) {
+                            badgeDot.textContent = unread;
+                            if (unread > 0) badgeDot.classList.remove('hidden');
+                            else badgeDot.classList.add('hidden');
+                        }
+                    })
+                    .catch(function() {});
+            }
+
+            // Sync pending delete requests count (Admin & Manager only)
+            if (window.currentUser && (window.currentUser.isAdmin || window.currentUser.isManager)) {
+                var rdd = document.getElementById('req-dropdown');
+                if (rdd && rdd.classList.contains('show')) {
+                    loadDeleteRequests();
+                } else {
+                    fetch('/DeleteRequests/GetPending')
+                        .then(function(res) { if (!res.ok) return null; return res.json(); })
+                        .then(function(data) {
+                            if (!data) return;
+                            var count = data.count || 0;
+                            var badgePill = document.getElementById('req-badge-pill');
+                            if (badgePill) {
+                                badgePill.textContent = count;
+                                if (count > 0) badgePill.classList.remove('hidden');
+                                else badgePill.classList.add('hidden');
+                            }
+                        })
+                        .catch(function() {});
+                }
+            }
+        }, 25000);
+    </script>
 </body>
 </html>
+

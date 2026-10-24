@@ -1,8 +1,569 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "SmarD – Prefab | Modular | Building Solutions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@section HeadStyles {
+    <meta name="description" content="Design, configure and get accurate quotations for modular construction products from our factory." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --red: #E8192C; --blue: #1565C0; --blue2: #1976D2;
+            --dark: #1A1A2E; --gray: #64748B; --border: #E2E8F0;
+        }
+        html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: #e8edf2; }
+
+        /* PAGE WRAPPER */
+        .smard-page { width: 100vw; height: 100vh; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+        /* HERO BG */
+        .hero-bg {
+            position: absolute; inset: 0;
+            background-image: url('/images/factory_hero_bg.jpg');
+            background-size: cover; background-position: center top; z-index: 0;
+        }
+        .hero-bg::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to right,
+                rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.92) 35%,
+                rgba(255,255,255,0.55) 55%, rgba(255,255,255,0.10) 75%, rgba(255,255,255,0.04) 100%);
+        }
+
+        /* MAIN LAYOUT */
+        .smard-main { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100vh; }
+
+        /* TOP BAR */
+        .smard-topbar { padding: 14px 40px 0 40px; flex-shrink: 0; }
+        .s-logo { display: flex; align-items: center; gap: 9px; }
+        .s-logo-text { display: flex; flex-direction: column; }
+        .s-logo-name { font-size: 26px; font-weight: 800; color: var(--dark); letter-spacing: -0.5px; line-height: 1; }
+        .s-logo-name span { color: var(--red); }
+        .s-logo-sub { font-size: 7px; font-weight: 700; letter-spacing: 1.8px; color: var(--gray); text-transform: uppercase; margin-top: 2px; }
+
+        /* CONTENT ROW */
+        .smard-row { display: flex; flex: 1; align-items: center; padding: 4px 40px 16px 40px; overflow: hidden; }
+
+        /* LEFT PANEL */
+        .s-left { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; padding-right: 20px; max-width: 520px; padding-top: 0; }
+        .s-tag { display: flex; align-items: center; gap: 10px; font-size: 9.5px; font-weight: 700; letter-spacing: 2.2px; color: var(--dark); text-transform: uppercase; margin-bottom: 10px; }
+        .s-tag::after { content: ''; display: inline-block; width: 26px; height: 2.5px; background: var(--red); border-radius: 2px; }
+        .s-h1 { font-size: clamp(26px, 3vw, 42px); font-weight: 800; color: var(--dark); line-height: 1.1; }
+        .s-h1 .blue { color: var(--blue); display: block; }
+        .s-desc { font-size: 12.5px; color: #475569; line-height: 1.7; margin-top: 10px; margin-bottom: 18px; max-width: 340px; }
+
+        /* FEATURE ICONS */
+        .s-features { display: flex; gap: 16px; margin-bottom: 20px; }
+        .s-feat { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+        .s-feat-box {
+            width: 46px; height: 46px; border-radius: 10px;
+            background: rgba(255,255,255,0.9); border: 1.5px solid rgba(226,232,240,0.8);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: box-shadow .2s, transform .2s;
+        }
+        .s-feat-box:hover { box-shadow: 0 6px 18px rgba(21,101,192,0.2); transform: translateY(-2px); }
+        .s-feat-box svg { width: 23px; height: 23px; }
+        .s-feat-lbl { font-size: 9.5px; font-weight: 600; color: var(--dark); line-height: 1.3; max-width: 58px; }
+
+        /* PRODUCT CARDS */
+        .s-cards { display: flex; gap: 10px; }
+        .s-card {
+            flex: 1; border-radius: 14px; overflow: hidden;
+            background: rgba(255,255,255,0.97); box-shadow: 0 4px 18px rgba(0,0,0,0.13);
+            border: 1.5px solid rgba(255,255,255,0.85); transition: transform .25s, box-shadow .25s; cursor: pointer;
+        }
+        .s-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.18); }
+        .s-card img { width: 100%; height: 115px; object-fit: cover; display: block; }
+        .s-card-body { padding: 9px 11px 11px; display: flex; align-items: center; gap: 7px; }
+        .s-card-body svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .s-card-lbl { font-size: 11px; font-weight: 700; color: var(--dark); line-height: 1.35; }
+
+        /* SPACER */
+        .s-spacer { flex: 1; }
+
+        /* RIGHT PANEL */
+        .s-right { width: 330px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; }
+
+        /* LOGIN CARD */
+        .s-card-login {
+            background: rgba(255,255,255,0.99); border-radius: 20px; padding: 26px 26px 20px;
+            box-shadow: 0 8px 44px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid rgba(230,235,245,0.9);
+        }
+        .s-clogo { display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 14px; }
+        .s-clogo-name { font-size: 19px; font-weight: 800; color: var(--dark); line-height: 1; }
+        .s-clogo-name span { color: var(--red); }
+        .s-clogo-sub { font-size: 6px; font-weight: 700; letter-spacing: 1.5px; color: var(--gray); text-transform: uppercase; margin-top: 2px; }
+        .s-ctitle { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 4px; text-align: center; }
+        .s-ctitle span { color: var(--red); }
+        .s-csub { font-size: 11px; color: var(--gray); line-height: 1.6; margin-bottom: 18px; max-width: 230px; text-align: center; margin-left: auto; margin-right: auto; }
+
+        /* FORM */
+        .s-fg { position: relative; margin-bottom: 11px; }
+        .s-ficon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #94A3B8; display: flex; align-items: center; }
+        .s-ficon svg { width: 15px; height: 15px; }
+        .s-input {
+            width: 100%; height: 42px; border: 1.5px solid #DDE3EE; border-radius: 9px;
+            padding: 0 40px 0 36px; font-size: 12.5px; font-family: 'Inter', sans-serif;
+            color: var(--dark); background: #F8FAFC; outline: none; transition: border-color .2s, box-shadow .2s;
+        }
+        .s-input::placeholder { color: #B0BEC5; }
+        .s-input:focus { border-color: var(--blue2); box-shadow: 0 0 0 3px rgba(25,118,210,0.10); background: #fff; }
+        .s-eye { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94A3B8; display: flex; align-items: center; padding: 2px; }
+        .s-eye svg { width: 16px; height: 16px; }
+        .s-eye:hover { color: var(--blue); }
+        .s-opts { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .s-rem { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
+        .s-rem input[type="checkbox"] { display: none; }
+        .s-chk { width: 16px; height: 16px; border-radius: 4px; background: var(--blue2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .2s; }
+        .s-chk svg { width: 10px; height: 10px; }
+        .s-remlbl { font-size: 11.5px; font-weight: 500; color: var(--dark); }
+        .s-forgot { font-size: 11.5px; font-weight: 600; color: var(--blue2); text-decoration: none; transition: color .2s; }
+        .s-forgot:hover { color: var(--blue); text-decoration: underline; }
+
+        /* BUTTONS */
+        .s-btn-login {
+            width: 100%; height: 44px; background: linear-gradient(135deg,#1E88E5,#1565C0);
+            color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
+            font-family: 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 8px; letter-spacing: .3px;
+            transition: background .2s, transform .15s, box-shadow .2s;
+            box-shadow: 0 4px 16px rgba(21,101,192,0.38);
+        }
+        .s-btn-login:hover { background: linear-gradient(135deg,#1976D2,#0D47A1); transform: translateY(-1px); box-shadow: 0 7px 22px rgba(21,101,192,0.48); }
+        .s-btn-login:active { transform: translateY(0); }
+        .s-btn-login svg { width: 16px; height: 16px; }
+        /* REGISTER NOW BUTTON */
+        .s-btn-register {
+            width: 100%; height: 44px; margin-top: 12px;
+            background: linear-gradient(135deg, #1DB985, #15A576);
+            color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700;
+            font-family: 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 8px; letter-spacing: .3px;
+            transition: background .2s, transform .15s, box-shadow .2s;
+            box-shadow: 0 4px 16px rgba(29,185,133,0.35);
+        }
+        .s-btn-register:hover { background: linear-gradient(135deg, #15A576, #0D8F63); transform: translateY(-1px); box-shadow: 0 7px 22px rgba(29,185,133,0.45); }
+        .s-btn-register:active { transform: translateY(0); }
+        .s-btn-register svg { width: 18px; height: 18px; }
+
+        /* REGISTRATION MODAL OVERLAY */
+        .reg-overlay {
+            display: none; position: fixed; inset: 0; z-index: 1000;
+            background: rgba(15,23,42,0.55); backdrop-filter: blur(6px);
+            align-items: center; justify-content: center;
+        }
+        .reg-overlay.active { display: flex; }
+
+        /* REGISTRATION MODAL */
+        .reg-modal {
+            background: #fff; border-radius: 20px; padding: 32px 30px 28px;
+            width: 370px; max-width: 92vw; text-align: center; position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.22), 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid rgba(230,235,245,0.9);
+            animation: regModalIn .3s ease;
+        }
+        @@keyframes regModalIn {
+            from { opacity: 0; transform: scale(0.92) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .reg-close {
+            position: absolute; top: 14px; right: 16px; background: none; border: none;
+            cursor: pointer; color: #94A3B8; font-size: 22px; line-height: 1; padding: 4px;
+            transition: color .2s;
+        }
+        .reg-close:hover { color: var(--dark); }
+        .reg-icon {
+            width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 16px;
+            background: linear-gradient(135deg, #7C3AED, #6D28D9);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 18px rgba(124,58,237,0.35);
+        }
+        .reg-icon svg { width: 26px; height: 26px; color: #fff; }
+        .reg-title { font-size: 20px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+        .reg-subtitle { font-size: 13px; color: var(--gray); line-height: 1.6; margin-bottom: 18px; max-width: 260px; margin-left: auto; margin-right: auto; }
+        .reg-email-card {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: linear-gradient(135deg, #EEF2FF, #E0E7FF); border-radius: 12px;
+            padding: 14px 20px; margin-bottom: 16px;
+            border: 1px solid #C7D2FE;
+        }
+        .reg-email-card svg { width: 20px; height: 20px; color: #6366F1; flex-shrink: 0; }
+        .reg-email-card a {
+            font-size: 14px; font-weight: 700; color: #4F46E5; text-decoration: none;
+            transition: color .2s;
+        }
+        .reg-email-card a:hover { color: #4338CA; text-decoration: underline; }
+        .reg-note { font-size: 12px; color: var(--gray); margin-bottom: 18px; }
+        .reg-btn-close {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 32px; border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #7C3AED, #6D28D9);
+            color: #fff; font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif;
+            cursor: pointer; transition: background .2s, transform .15s, box-shadow .2s;
+            box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+        }
+        .reg-btn-close:hover { background: linear-gradient(135deg, #6D28D9, #5B21B6); transform: translateY(-1px); box-shadow: 0 7px 22px rgba(124,58,237,0.45); }
+        .reg-btn-close:active { transform: translateY(0); }
+
+        /* TRUST BADGES */
+        .s-trust { display: flex; justify-content: space-between; gap: 6px; margin-top: 14px; padding: 10px 8px; background: rgba(255,255,255,0.82); border-radius: 14px; border: 1px solid rgba(226,232,240,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .s-tbadge { display: flex; align-items: center; gap: 8px; flex: 1; }
+        .s-ticon { width: 34px; height: 34px; border-radius: 50%; background: #EEF4FF; border: 1.5px solid #DBEAFE; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 1px 4px rgba(25,118,210,0.12); }
+        .s-ticon svg { width: 16px; height: 16px; color: var(--blue2); }
+        .s-ttext { display: flex; flex-direction: column; gap: 1px; }
+        .s-ttitle { font-size: 11px; font-weight: 700; color: var(--dark); }
+        .s-tdesc { font-size: 9.5px; color: var(--gray); line-height: 1.4; }
+        .s-tsep { width: 1px; background: rgba(0,0,0,0.09); align-self: stretch; margin: 3px 0; }
+
+        /* FOOTER */
+        .smard-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 20px;
+            padding: 0;
+        }
+        .smard-footer-left { display: flex; align-items: center; gap: 20px; }
+        .smard-footer-version { display: flex; flex-direction: column; gap: 1px; }
+        .smard-footer-version span { font-size: 11.5px; color: var(--gray); font-weight: 500; }
+        .smard-footer-right { display: flex; align-items: center; gap: 8px; }
+        .smard-footer-right span { font-size: 11.5px; color: var(--gray); font-weight: 500; }
+
+        .algo-logo {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+    </style>
+}
+
+<div class="smard-page">
+    <div class="hero-bg"></div>
+    <div class="smard-main">
+
+        <!-- TOP BAR -->
+        <div class="smard-topbar">
+            <div class="s-logo">
+                <img src="/images/Smard_Logo.png" alt="SmarD Logo" style="width:auto;height:60px;object-fit:contain;border-radius:0;" />
+            </div>
+        </div>
+
+        <!-- CONTENT ROW -->
+        <div class="smard-row">
+
+            <!-- LEFT PANEL -->
+            <div class="s-left">
+                <div class="s-tag">FROM FACTORY TO REAL SPACES</div>
+                <h1 class="s-h1">
+                    Modular Solutions
+                    <span class="blue">Built for Tomorrow</span>
+                </h1>
+                <p class="s-desc">
+                    Design, configure and get accurate quotations<br />
+                    for modular construction products from our factory
+                </p>
+
+                <!-- Feature Icons -->
+                <div class="s-features">
+                    <div class="s-feat">
+                        <div class="s-feat-box">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <rect x="2" y="7" width="9" height="9" rx="1.5" fill="#5C6BC0"/>
+                                <rect x="13" y="2" width="9" height="9" rx="1.5" fill="#5C6BC0" opacity=".65"/>
+                                <rect x="13" y="13" width="9" height="9" rx="1.5" fill="#5C6BC0" opacity=".4"/>
+                                <rect x="2" y="18" width="9" height="4" rx="1" fill="#5C6BC0" opacity=".3"/>
+                            </svg>
+                        </div>
+                        <div class="s-feat-lbl">Modular Units</div>
+                    </div>
+                    <div class="s-feat">
+                        <div class="s-feat-box">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="2" width="14" height="18" rx="2" fill="#43A047" opacity=".12" stroke="#43A047" stroke-width="1.5"/>
+                                <line x1="7" y1="7" x2="13" y2="7" stroke="#43A047" stroke-width="1.5" stroke-linecap="round"/>
+                                <line x1="7" y1="10" x2="13" y2="10" stroke="#43A047" stroke-width="1.5" stroke-linecap="round"/>
+                                <line x1="7" y1="13" x2="11" y2="13" stroke="#43A047" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="18" cy="18" r="4" fill="#fff" stroke="#43A047" stroke-width="1.5"/>
+                                <line x1="16.8" y1="18" x2="19.2" y2="18" stroke="#43A047" stroke-width="1.3" stroke-linecap="round"/>
+                                <line x1="18" y1="16.8" x2="18" y2="19.2" stroke="#43A047" stroke-width="1.3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="s-feat-lbl">Custom Quotations</div>
+                    </div>
+                    <div class="s-feat">
+                        <div class="s-feat-box">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M2 18V10L8 6V10L14 6V18H2Z" fill="#FB8C00" opacity=".18" stroke="#FB8C00" stroke-width="1.5" stroke-linejoin="round"/>
+                                <rect x="14" y="10" width="8" height="8" rx="1" fill="#FB8C00" opacity=".18" stroke="#FB8C00" stroke-width="1.5"/>
+                                <line x1="2" y1="18" x2="22" y2="18" stroke="#FB8C00" stroke-width="1.5" stroke-linecap="round"/>
+                                <rect x="6" y="13" width="3" height="5" rx=".5" fill="#FB8C00" opacity=".55"/>
+                                <rect x="16" y="13" width="3" height="3" rx=".5" fill="#FB8C00" opacity=".55"/>
+                            </svg>
+                        </div>
+                        <div class="s-feat-lbl">Factory Products</div>
+                    </div>
+                    <div class="s-feat">
+                        <div class="s-feat-box">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="3" width="8" height="8" rx="1.5" fill="#7B1FA2" opacity=".18" stroke="#7B1FA2" stroke-width="1.3"/>
+                                <rect x="13" y="3" width="8" height="8" rx="1.5" fill="#7B1FA2" opacity=".18" stroke="#7B1FA2" stroke-width="1.3"/>
+                                <rect x="3" y="13" width="8" height="8" rx="1.5" fill="#7B1FA2" opacity=".18" stroke="#7B1FA2" stroke-width="1.3"/>
+                                <rect x="13" y="13" width="8" height="8" rx="1.5" fill="#7B1FA2" opacity=".7" stroke="#7B1FA2" stroke-width="1.3"/>
+                                <line x1="15" y1="17" x2="19" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+                                <line x1="17" y1="15" x2="17" y2="19" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="s-feat-lbl">BOQ & Costing</div>
+                    </div>
+                </div>
+
+                <!-- Product Cards -->
+                <div class="s-cards">
+                    <div class="s-card" id="card-accommodation">
+                        <img src="/images/accommodation_module.jpg" alt="Accommodation Modules" />
+                        <div class="s-card-body">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <rect x="2" y="8" width="10" height="13" rx="1" fill="#1976D2" opacity=".15" stroke="#1976D2" stroke-width="1.4"/>
+                                <rect x="13" y="4" width="9" height="17" rx="1" fill="#1976D2" opacity=".15" stroke="#1976D2" stroke-width="1.4"/>
+                                <line x1="2" y1="21" x2="22" y2="21" stroke="#1976D2" stroke-width="1.4" stroke-linecap="round"/>
+                                <rect x="4" y="12" width="3" height="3" rx=".5" fill="#1976D2" opacity=".55"/>
+                                <rect x="8" y="12" width="3" height="3" rx=".5" fill="#1976D2" opacity=".55"/>
+                                <rect x="15" y="8" width="3" height="3" rx=".5" fill="#1976D2" opacity=".55"/>
+                                <rect x="15" y="13" width="3" height="3" rx=".5" fill="#1976D2" opacity=".55"/>
+                            </svg>
+                            <div class="s-card-lbl">Accommodation<br />Modules</div>
+                        </div>
+                    </div>
+                    <div class="s-card" id="card-siteoffice">
+                        <img src="/images/site_office.jpg" alt="Site Offices" />
+                        <div class="s-card-body">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <rect x="2" y="6" width="20" height="15" rx="1.5" fill="#1976D2" opacity=".12" stroke="#1976D2" stroke-width="1.4"/>
+                                <path d="M2 9h20" stroke="#1976D2" stroke-width="1.2"/>
+                                <rect x="5" y="12" width="4" height="4" rx=".5" fill="#1976D2" opacity=".45"/>
+                                <rect x="15" y="12" width="4" height="4" rx=".5" fill="#1976D2" opacity=".45"/>
+                                <rect x="10" y="12" width="4" height="9" rx=".5" fill="#1976D2" opacity=".45"/>
+                                <path d="M7 6V4h10v2" stroke="#1976D2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div class="s-card-lbl">Site Offices</div>
+                        </div>
+                    </div>
+                    <div class="s-card" id="card-healthcare">
+                        <img src="/images/healthcare_module.jpg" alt="Modular Healthcare Units" />
+                        <div class="s-card-body">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="9" fill="#1976D2" opacity=".12" stroke="#1976D2" stroke-width="1.4"/>
+                                <path d="M12 8v8M8 12h8" stroke="#1976D2" stroke-width="2.2" stroke-linecap="round"/>
+                            </svg>
+                            <div class="s-card-lbl">Modular Healthcare<br />Units</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="smard-footer">
+                    <div class="smard-footer-left">
+                        <div class="smard-footer-version">
+                            <span>Version: 1.0.0</span>
+                            <span>Copyright &copy; 2026.</span>
+                        </div>
+                    </div>
+                    <div class="smard-footer-right">
+                        <img src="/images/Algorytham.png" alt="Algorytham Logo" style="height: 18px; width: auto;" onerror="this.onerror=null; this.src='/images/Algorytham.png';" />
+                        <span id="CompanyName">Powered by Algorytham Technologies</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPACER -->
+            <div class="s-spacer"></div>
+
+            <!-- RIGHT PANEL -->
+            <div class="s-right">
+                <div class="s-card-login">
+
+                    <!-- Card Logo -->
+                    <div class="s-clogo">
+                        <img src="/images/Smard_Logo.png" alt="SmarD Logo" style="width:100px;height:100px;object-fit:contain;border-radius:0;" />
+                    </div>
+
+                    <div class="s-ctitle">Login to <span>Smard</span></div>
+                    <p class="s-csub">Access the Quotation Assistant and Manage Your Modular Projects</p>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#DC2626;font-weight:500;text-align:center;">@ViewBag.Error</div>
+                    }
+
+                    <form method="post" action="/Home/Login" id="login-form">
+
+                    <!-- Email -->
+                    <div class="s-fg">
+                        <span class="s-ficon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="2" y="4" width="20" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 7l10 7 10-7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <input id="email-input" name="Email" type="email" class="s-input" placeholder="Email Address" autocomplete="email" />
+                    </div>
+
+                    <!-- Password -->
+                    <div class="s-fg">
+                        <span class="s-ficon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="3" y="11" width="18" height="11" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="12" cy="16" r="1.2" fill="currentColor"/>
+                            </svg>
+                        </span>
+                        <input id="password-input" name="Password" type="password" class="s-input" placeholder="Password" autocomplete="current-password" />
+                        <button class="s-eye" id="toggle-pwd" type="button" onclick="togglePwd()">
+                            <svg id="eye-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="s-opts">
+                        <label class="s-rem" id="rem-label">
+                            <input type="checkbox" name="RememberMe" value="true" id="rem-cb" checked />
+                            <div class="s-chk" id="s-chk">
+                                <svg viewBox="0 0 12 12" fill="none">
+                                    <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span class="s-remlbl">Remember me</span>
+                        </label>
+                        <a href="javascript:void(0);" class="s-forgot" id="forgot-link" onclick="openForgotModal()">Forgot Password?</a>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button class="s-btn-login" id="login-btn" type="submit">
+                        Login
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    </form>
+
+                    <!-- Register Now Button -->
+                    <button class="s-btn-register" id="register-btn" type="button" onclick="openRegModal()">
+                        Register Now
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="12" cy="12" r="9" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- REGISTRATION MODAL -->
+<div class="reg-overlay" id="reg-overlay" onclick="closeRegModalOutside(event)">
+    <div class="reg-modal">
+        <button class="reg-close" id="reg-close-x" type="button" onclick="closeRegModal()">&times;</button>
+        <div class="reg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="4" width="20" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 7l10 7 10-7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="reg-title">Registration Information</div>
+        <p class="reg-subtitle">To register, please reach out to our system engineer directly.</p>
+        <div class="reg-email-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="4" width="20" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 7l10 7 10-7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <a href="mailto:systemengineersudeep@gmail.com">systemengineersudeep&#64;gmail.com</a>
+        </div>
+        <p class="reg-note">We'll get you set up as soon as possible!</p>
+        <button class="reg-btn-close" type="button" onclick="closeRegModal()">Close</button>
+    </div>
 </div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="reg-overlay" id="forgot-overlay" onclick="closeForgotModalOutside(event)">
+    <div class="reg-modal">
+        <button class="reg-close" id="forgot-close-x" type="button" onclick="closeForgotModal()">&times;</button>
+        <div class="reg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3" y="11" width="18" height="11" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="16" r="1.3" fill="currentColor"/>
+            </svg>
+        </div>
+        <div class="reg-title">Password Regeneration</div>
+        <p class="reg-subtitle">To reset or regenerate your password, please reach out to our system engineer directly.</p>
+        <div class="reg-email-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="4" width="20" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 7l10 7 10-7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <a href="mailto:systemengineersudeep@gmail.com?subject=Password%20Regeneration%20Request">systemengineersudeep&#64;gmail.com</a>
+        </div>
+        <p class="reg-note">We'll assist you with password regeneration as soon as possible!</p>
+        <button class="reg-btn-close" type="button" onclick="closeForgotModal()">Close</button>
+    </div>
+</div>
+</div>
+
+@section Scripts {
+<script>
+    function togglePwd() {
+        var inp = document.getElementById('password-input');
+        var ico = document.getElementById('eye-ico');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            ico.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="1.8"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="1.8"/><line x1="1" y1="1" x2="23" y2="23" stroke-linecap="round" stroke-currentColor" stroke-width="1.8"/>';
+        } else {
+            inp.type = 'password';
+            ico.innerHTML = '<path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="1.8"/>';
+        }
+    }
+    document.getElementById('rem-label').addEventListener('click', function () {
+        var cb = document.getElementById('rem-cb');
+        var box = document.getElementById('s-chk');
+        if (cb.checked) {
+            box.style.background = '#fff'; box.style.border = '1.5px solid #CBD5E1';
+        } else {
+            box.style.background = '#1976D2'; box.style.border = 'none';
+        }
+    });
+    function handleLogin(btn) {
+        btn.textContent = 'Logging in...'; btn.style.opacity = '0.85'; btn.disabled = true;
+        setTimeout(function () {
+            btn.innerHTML = 'Login <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            btn.style.opacity = '1'; btn.disabled = false;
+        }, 2000);
+    }
+    function openRegModal() {
+        document.getElementById('reg-overlay').classList.add('active');
+    }
+    function closeRegModal() {
+        document.getElementById('reg-overlay').classList.remove('active');
+    }
+    function closeRegModalOutside(e) {
+        if (e.target === document.getElementById('reg-overlay')) closeRegModal();
+    }
+    function openForgotModal() {
+        document.getElementById('forgot-overlay').classList.add('active');
+    }
+    function closeForgotModal() {
+        document.getElementById('forgot-overlay').classList.remove('active');
+    }
+    function closeForgotModalOutside(e) {
+        if (e.target === document.getElementById('forgot-overlay')) closeForgotModal();
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeRegModal();
+            closeForgotModal();
+        }
+    });
+</script>
+}

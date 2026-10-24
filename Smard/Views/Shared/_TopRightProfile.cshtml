@@ -1,0 +1,326 @@
+@using System.Security.Claims
+@inject Smard.Services.INotificationService NotifService
+@inject Smard.Services.IDeleteRequestService DeleteReqService
+@{
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "1";
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "User";
+    var isAdmin = User.IsInRole("Admin") || (userRole == "Admin") || string.Equals(User.FindFirst(ClaimTypes.Email)?.Value, "sudeep@smard.com", StringComparison.OrdinalIgnoreCase);
+    var isManager = User.IsInRole("Manager") || (userRole == "Manager");
+    var canViewRequests = isAdmin || isManager;
+
+    var unreadCount = 0;
+    var pendingReqCount = 0;
+    List<Smard.Services.UserNotificationDto> notifs = new();
+    List<Smard.Services.DeleteRequestDto> pendingRequests = new();
+
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        try
+        {
+            unreadCount = await NotifService.GetUnreadCountAsync(userId, userRole);
+            notifs = await NotifService.GetRecentNotificationsAsync(userId, userRole, 20);
+            if (canViewRequests)
+            {
+                pendingReqCount = await DeleteReqService.GetPendingCountAsync();
+                pendingRequests = await DeleteReqService.GetPendingRequestsAsync();
+            }
+        }
+        catch
+        {
+            // fallback gracefully
+        }
+    }
+}
+<script>
+    window.currentUser = {
+        id: '@userId',
+        name: '@(User.Identity?.Name ?? "User")',
+        role: '@userRole',
+        isAdmin: @(isAdmin ? "true" : "false"),
+        isManager: @(isManager ? "true" : "false")
+    };
+</script>
+
+<!-- TOP-RIGHT PROFILE & NOTIFICATIONS & REQUESTS -->
+<div class="topright-profile" id="profile-area">
+@if (canViewRequests)
+{
+    <!-- Delete Requests Button (Left of Notification Bell, Icon Only - Admin & Manager Only) -->
+    <div class="req-wrapper" id="req-wrapper">
+        <button type="button" class="req-nav-btn" id="req-toggle" onclick="toggleReqMenu(event)" title="Delete Requests" aria-label="Delete Requests">
+            <svg class="req-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 10h-4c0 1.66-1.34 3-3 3s-3-1.34-3-3H5V5h14v8z"/>
+            </svg>
+            <span class="req-badge-pill @(pendingReqCount > 0 ? "" : "hidden")" id="req-badge-pill">@(pendingReqCount)</span>
+        </button>
+
+        <!-- Delete Requests Dropdown Panel (Image 3 Reference) -->
+        <div class="req-dropdown" id="req-dropdown">
+            <div class="req-dd-header">
+                <div class="req-dd-title-box">
+                    <svg class="req-dd-header-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 10h-4c0 1.66-1.34 3-3 3s-3-1.34-3-3H5V5h14v8z"/>
+                    </svg>
+                    <span class="req-dd-title">Delete Requests</span>
+                </div>
+                <button type="button" class="req-dd-close" onclick="closeReqMenu(event)" title="Close">&times;</button>
+            </div>
+            <div class="req-dd-body" id="req-list">
+                @if (pendingRequests.Any())
+                {
+                    @foreach (var req in pendingRequests)
+                    {
+                        <div class="req-item-card" data-req-id="@req.Id">
+                            <div class="req-card-top-row">
+                                <div class="req-avatar">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                </div>
+                                <div class="req-user-info">
+                                    <div class="req-user-name">@req.RequestedByUserName</div>
+                                    <div class="req-master-name">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                        </svg>
+                                        <span>@req.MasterName</span>
+                                    </div>
+                                </div>
+                                <div class="req-timestamp">@req.RequestedOn</div>
+                            </div>
+                            <div class="req-type-pill">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+                                    <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+                                </svg>
+                                <span>TYPE @req.TypeIndex &mdash; &ldquo;@req.TypeName&rdquo;</span>
+                            </div>
+                            <div class="req-card-actions">
+                                <a href="@(string.IsNullOrEmpty(req.ActionUrl) ? ("/" + req.ControllerName) : req.ActionUrl)" class="req-btn-action req-btn-view">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <span>View</span>
+                                </a>
+                                <button type="button" class="req-btn-action req-btn-approve" onclick="approveDeleteRequest(@req.Id, event)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                    <span>Approve</span>
+                                </button>
+                                <button type="button" class="req-btn-action req-btn-reject" onclick="openRejectModal(@req.Id, '@req.TypeName.Replace("'", "\\'")', event)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="15" y1="9" x2="9" y2="15"/>
+                                        <line x1="9" y1="9" x2="15" y2="15"/>
+                                    </svg>
+                                    <span>Reject</span>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="req-empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" style="width:36px;height:36px;margin:0 auto 10px;display:block;">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 10h-4c0 1.66-1.34 3-3 3s-3-1.34-3-3H5V5h14v8z"/>
+                        </svg>
+                        <div style="font-size:13px;font-weight:600;color:#334155;margin-bottom:4px;">No delete requests</div>
+                        <div style="font-size:11.5px;color:#94A3B8;">Pending requests will appear here for Admin review.</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+    <!-- Notification Bell -->
+    <div class="notif-wrapper" id="notif-wrapper">
+        <button type="button" class="notif-btn" id="notif-toggle" onclick="toggleNotifMenu(event)" title="Notifications" aria-label="Notifications">
+            <svg class="notif-bell-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+            </svg>
+            <span class="notif-badge-pill @(unreadCount > 0 ? "" : "hidden")" id="notif-badge-dot">@(unreadCount)</span>
+        </button>
+
+        <!-- Notification Dropdown Panel -->
+        <div class="notif-dropdown" id="notif-dropdown">
+            <div class="notif-dd-header">
+                <div class="notif-dd-title-row">
+                    <span class="notif-dd-title">Notifications</span>
+                    <span class="notif-dd-pill" id="notif-dd-pill">@(unreadCount) New</span>
+                </div>
+                <button type="button" class="notif-dd-mark-read" onclick="markAllNotificationsRead(event)">Mark all read</button>
+            </div>
+            <div class="notif-dd-body" id="notif-list">
+                @if (notifs.Any())
+                {
+                    @foreach (var item in notifs)
+                    {
+                        var isUnread = !item.IsRead;
+                        var typeLower = (item.NotifType ?? "").ToLowerInvariant();
+                        var iconColor = "blue";
+                        if (typeLower is "update") { iconColor = "purple"; }
+                        else if (typeLower is "delete" or "reject") { iconColor = "rose"; }
+                        else if (typeLower is "info") { iconColor = "green"; }
+
+                        <div class="notif-item @(isUnread ? "unread" : "")" data-id="@item.Id" onclick="handleNotifClick(@item.Id, '@(item.ActionUrl ?? "")', event)">
+                            <div class="notif-item-icon @iconColor">
+                                @if (typeLower is "create" or "add")
+                                {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 5v14M5 12h14"/>
+                                    </svg>
+                                }
+                                else if (typeLower is "update")
+                                {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                        <path d="M3 3v5h5"/>
+                                        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                                        <path d="M16 21h5v-5"/>
+                                    </svg>
+                                }
+                                else if (typeLower is "delete" or "reject")
+                                {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"/>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    </svg>
+                                }
+                                else
+                                {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="16" x2="12" y2="12"/>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                    </svg>
+                                }
+                            </div>
+                            <div class="notif-item-details">
+                                <div class="notif-item-title-row" style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
+                                    <div class="notif-item-title">@item.Title</div>
+                                    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                                        @if (isUnread)
+                                        {
+                                            <span class="notif-unread-dot" title="Unread"></span>
+                                        }
+                                        <button type="button" class="notif-item-dismiss" onclick="dismissNotification(@item.Id, event)" title="Dismiss">&times;</button>
+                                    </div>
+                                </div>
+                                <div class="notif-item-desc">@item.Message</div>
+                                <div class="notif-item-time" style="display:flex;align-items:center;justify-content:space-between;">
+                                    <span>@item.CreatedOn</span>
+                                    @if (!string.IsNullOrEmpty(item.TimeAgo))
+                                    {
+                                        <span style="font-size:10px;color:#94a3b8;font-weight:500;">@item.TimeAgo</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="notif-empty-state" style="padding:28px 16px;text-align:center;color:#64748B;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" style="width:36px;height:36px;margin:0 auto 10px;display:block;">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <div style="font-size:13px;font-weight:600;color:#334155;margin-bottom:4px;">No notifications yet</div>
+                        <div style="font-size:11.5px;color:#94A3B8;">Master creations and updates will appear here.</div>
+                    </div>
+                }
+            </div>
+            <div class="notif-dd-footer">
+                <span class="notif-dd-footer-text">SmarD Notifications Center</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Button -->
+    <div class="profile-wrapper" style="position:relative;">
+        <button class="profile-btn" id="profile-toggle" onclick="toggleProfileMenu(event)">
+            <div class="profile-avatar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <span class="profile-btn-name">@(User.Identity?.Name ?? "User")</span>
+            <svg class="profile-btn-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+
+        <div class="profile-dropdown" id="profile-dropdown">
+            <div class="profile-dd-header">
+                <div class="profile-dd-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="profile-dd-info">
+                    <span class="profile-dd-name">@(User.Identity?.Name ?? "User")</span>
+                    <span class="profile-dd-email">@(User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value ?? (User.Identity?.Name?.ToLower() + "@smard.com"))</span>
+                </div>
+            </div>
+            <div class="profile-dd-actions">
+                <form method="post" action="/Home/Logout" style="margin:0;">
+                    @Html.AntiForgeryToken()
+                    <button class="profile-dd-btn signout" type="submit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="16 17 21 12 16 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="21" y1="12" x2="9" y2="12" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Sign Out
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (canViewRequests)
+{
+    <!-- Reject Delete Request Modal (Image 4 Reference) -->
+    <div class="reject-modal-backdrop" id="reject-delete-modal" style="display:none;" onclick="handleRejectBackdropClick(event)">
+        <div class="reject-modal-card" role="dialog" aria-modal="true" aria-labelledby="reject-modal-title">
+            <button type="button" class="reject-modal-close" onclick="closeRejectModal()">&times;</button>
+            <div class="reject-modal-icon-wrap">
+                <div class="reject-modal-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="30" height="30">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </div>
+            </div>
+            <h3 class="reject-modal-title" id="reject-modal-title">Reject Delete Request</h3>
+            <p class="reject-modal-subtitle">
+                Please provide a reason for rejecting this delete request.<br>
+                The requesting user will be notified of this reason.
+            </p>
+            <div class="reject-modal-form">
+                <label class="reject-form-label" for="reject-reason-input">
+                    Reason for Rejection <span class="req-asterisk">*</span>
+                </label>
+                <textarea id="reject-reason-input" class="reject-form-textarea" rows="3" placeholder="e.g. This specification is currently active in ongoing project quotations."></textarea>
+                <div id="reject-reason-error" class="reject-form-error" style="display:none;">Please provide a reason for rejecting this delete request.</div>
+            </div>
+            <div class="reject-modal-actions">
+                <button type="button" class="btn-reject-modal-cancel" onclick="closeRejectModal()">Cancel</button>
+                <button type="button" class="btn-reject-modal-submit" id="btn-reject-modal-submit" onclick="submitRejectDeleteRequest()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                    <span>Reject Request</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}

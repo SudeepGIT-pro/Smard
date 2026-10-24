@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmarD – Prefab | Modular | Building Solutions</title>
+  <meta name="description" content="Design, configure and get accurate quotations for modular construction products from our factory. Access the Quotation Assistant and manage your modular projects." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:    #E8192C;
+      --blue:   #1565C0;
+      --blue2:  #1976D2;
+      --dark:   #1A1A2E;
+      --gray:   #64748B;
+      --light:  #F1F5F9;
+      --white:  #FFFFFF;
+      --border: #E2E8F0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #e8edf2;
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    /* PAGE WRAPPER */
+    .page-wrapper {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* HERO BACKGROUND */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('factory_hero_bg.jpg');
+      background-size: cover;
+      background-position: center top;
+      z-index: 0;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(255,255,255,0.97) 0%,
+        rgba(255,255,255,0.92) 35%,
+        rgba(255,255,255,0.55) 55%,
+        rgba(255,255,255,0.12) 75%,
+        rgba(255,255,255,0.05) 100%
+      );
+    }
+
+    /* MAIN LAYOUT */
+    .main-layout {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* TOP BAR */
+    .top-bar {
+      padding: 18px 40px 0 40px;
+      flex-shrink: 0;
+    }
+
+    /* LOGO */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .logo-text-block { display: flex; flex-direction: column; }
+    .logo-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--dark);
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+    .logo-name span { color: var(--red); }
+    .logo-sub {
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      color: var(--gray);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* CONTENT ROW */
+    .content-row {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      padding: 8px 40px 16px 40px;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    /* LEFT PANEL */
+    .left-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-right: 24px;
+      max-width: 480px;
+    }
+
+    .tag-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 2.2px;
+      color: var(--dark);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .tag-line::after {
+      content: '';
+      display: inline-block;
+      width: 26px;
+      height: 2.5px;
+      background: var(--red);
+      border-radius: 2px;
+    }
+
+    .hero-heading {
+      font-size: clamp(26px, 3vw, 42px);
+      font-weight: 800;
+      color: var(--dark);
+      line-height: 1.1;
+      margin-bottom: 2px;
+    }
+    .hero-heading .blue-line {
+      color: var(--blue);
+      display: block;
+    }
+
+    .hero-desc {
+      font-size: 12.5px;
+      color: #475569;
+      line-height: 1.7;
+      margin-top: 10px;
+      margin-bottom: 18px;
+      max-width: 340px;
+    }
+
+    /* FEATURE ICONS */
+    .features-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .feature-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+    }
+    .feature-icon-box {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.9);
+      border: 1.5px solid rgba(226,232,240,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .feature-icon-box:hover { box-shadow: 0 6px 18px rgba(21,101,192,0.2); transform: translateY(-2px); }
+    .feature-icon-box svg { width: 23px; height: 23px; }
+    .feature-label {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--dark);
+      line-height: 1.3;
+      max-width: 58px;
+    }
+
+    /* PRODUCT CARDS */
+    .product-cards {
+      display: flex;
+      gap: 10px;
+    }
+    .product-card {
+      flex: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.11);
+      border: 1.5px solid rgba(255,255,255,0.8);
+      transition: transform 0.25s, box-shadow 0.25s;
+      cursor: pointer;
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.16); }
+    .product-card img {
+      width: 100%;
+      height: 88px;
+      object-fit: cover;
+      display: block;
+    }
+    .product-card-body {
+      padding: 8px 9px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .product-card-body svg { width: 17px; height: 17px; flex-shrink: 0; }
+    .product-card-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--dark);
+      line-height: 1.3;
+    }
+
+    /* MIDDLE SPACER */
+    .middle-spacer { flex: 1; }
+
+    /* RIGHT PANEL */
+    .right-panel {
+      width: 330px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0;
+    }
+
+    /* LOGIN CARD */
+    .login-card {
+      background: rgba(255,255,255,0.99);
+      border-radius: 20px;
+      padding: 26px 26px 20px;
+      box-shadow: 0 8px 44px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid rgba(230,235,245,0.9);
+    }
+
+    .card-logo {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+    .card-logo-name {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--dark);
+      line-height: 1;
+    }
+    .card-logo-name span { color: var(--red); }
+    .card-logo-sub {
+      font-size: 6px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--gray);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .card-title span { color: var(--red); }
+    .card-subtitle {
+      font-size: 11px;
+      color: var(--gray);
+      line-height: 1.6;
+      margin-bottom: 18px;
+      max-width: 230px;
+      text-align: center;
+    }
+
+    /* FORM */
+    .form-group { position: relative; margin-bottom: 11px; }
+    .form-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+    }
+    .form-icon svg { width: 15px; height: 15px; }
+    .form-input {
+      width: 100%;
+      height: 42px;
+      border: 1.5px solid #DDE3EE;
+      border-radius: 9px;
+      padding: 0 40px 0 36px;
+      font-size: 12.5px;
+      font-family: 'Inter', sans-serif;
+      color: var(--dark);
+      background: #F8FAFC;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input::placeholder { color: #B0BEC5; }
+    .form-input:focus {
+      border-color: var(--blue2);
+      box-shadow: 0 0 0 3px rgba(25,118,210,0.10);
+      background: #fff;
+    }
+    .eye-btn {
+      position: absolute;
+      right: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+    }
+    .eye-btn svg { width: 16px; height: 16px; }
+    .eye-btn:hover { color: var(--blue); }
+
+    /* CHECKBOX ROW */
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .remember-me input[type="checkbox"] { display: none; }
+    .custom-checkbox {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      background: var(--blue2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .custom-checkbox svg { width: 10px; height: 10px; }
+    .remember-label { font-size: 11.5px; font-weight: 500; color: var(--dark); }
+    .forgot-link {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--blue2);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .forgot-link:hover { color: var(--blue); text-decoration: underline; }
+
+    /* BUTTONS */
+    .btn-login {
+      width: 100%;
+      height: 44px;
+      background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.3px;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(21,101,192,0.38);
+    }
+    .btn-login:hover {
+      background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 7px 22px rgba(21,101,192,0.48);
+    }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login svg { width: 16px; height: 16px; }
+
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 11px 0;
+    }
+    .or-divider::before, .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .or-divider span {
+      font-size: 11px;
+      font-weight: 500;
+      color: #94A3B8;
+    }
+
+    .btn-microsoft {
+      width: 100%;
+      height: 42px;
+      background: #fff;
+      border: 1.5px solid #DDE3EE;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      color: var(--dark);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .btn-microsoft:hover {
+      background: #F8FAFC;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.09);
+    }
+    .ms-logo {
+      width: 18px;
+      height: 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .ms-logo span { display: block; border-radius: 1px; }
+    .ms-logo span:nth-child(1) { background: #F25022; }
+    .ms-logo span:nth-child(2) { background: #7FBA00; }
+    .ms-logo span:nth-child(3) { background: #00A4EF; }
+    .ms-logo span:nth-child(4) { background: #FFB900; }
+
+    /* TRUST BADGES */
+    .trust-badges {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+      margin-top: 12px;
+      padding: 0 2px;
+    }
+    .trust-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+    .trust-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.88);
+      border: 1.5px solid rgba(226,232,240,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .trust-icon svg { width: 14px; height: 14px; color: var(--blue2); }
+    .trust-text { display: flex; flex-direction: column; }
+    .trust-title { font-size: 9.5px; font-weight: 700; color: var(--dark); }
+    .trust-desc { font-size: 8px; color: var(--gray); line-height: 1.4; }
+    .trust-sep {
+      width: 1px;
+      background: rgba(0,0,0,0.07);
+      align-self: stretch;
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- HERO BACKGROUND -->
+  <div class="hero-bg"></div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout">
+
+    <!-- TOP BAR: Logo -->
+    <div class="top-bar">
+      <div class="logo">
+        <svg width="38" height="38" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="17" height="17" rx="2" fill="#E8192C"/>
+          <rect x="20" y="0" width="20" height="20" rx="2" fill="#1A1A2E"/>
+          <rect x="0" y="20" width="20" height="20" rx="2" fill="#1A1A2E"/>
+          <rect x="23" y="23" width="13" height="13" rx="1.5" fill="#E8192C"/>
+        </svg>
+        <div class="logo-text-block">
+          <div class="logo-name">smar<span>D</span></div>
+          <div class="logo-sub">PREFAB | MODULAR | BUILDING SOLUTIONS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT ROW -->
+    <div class="content-row">
+
+      <!-- LEFT PANEL -->
+      <div class="left-panel">
+
+        <div class="tag-line">FROM FACTORY TO REAL SPACES</div>
+
+        <h1 class="hero-heading">
+          Modular Solutions
+          <span class="blue-line">Built for Tomorrow.</span>
+        </h1>
+
+        <p class="hero-desc">
+          Design, configure and get accurate quotations<br/>
+          for modular construction products from our factory.
+        </p>
+
+        <!-- Feature Icons -->
+        <div class="features-row">
+          <div class="feature-item">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="7" width="9" height="9" rx="1.5" fill="#5C6BC0"/>
+                <rect x="13" y="2" width="9" height="9" rx="1.5" fill="#5C6BC0" opacity="0.65"/>
+                <rect x="13" y="13" width="9" height="9" rx="1.5" fill="#5C6BC0" opacity="0.4"/>
+                <rect x="2" y="18" width="9" height="4" rx="1" fill="#5C6BC0" opacity="0.3"/>
+              </svg>
+            </div>
+            <div class="feature-label">Modular Units</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="2" width="14" height="18" rx="2" fill="#43A047" opacity="0.12" stroke="#43A047" stroke-width="1.5"/>
+                <line x1="7" y1="7" x2="13" y2="7" stroke="#43A047" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="7" y1="10" x2="13" y2="10" stroke="#43A047" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="7" y1="13" x2="11" y2="13" stroke="#43A047" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="18" cy="18" r="4" fill="#fff" stroke="#43A047" stroke-width="1.5"/>
+                <line x1="16.8" y1="18" x2="19.2" y2="18" stroke="#43A047" stroke-width="1.3" stroke-linecap="round"/>
+                <line x1="18" y1="16.8" x2="18" y2="19.2" stroke="#43A047" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="feature-label">Custom Quotations</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 18V10L8 6V10L14 6V18H2Z" fill="#FB8C00" opacity="0.18" stroke="#FB8C00" stroke-width="1.5" stroke-linejoin="round"/>
+                <rect x="14" y="10" width="8" height="8" rx="1" fill="#FB8C00" opacity="0.18" stroke="#FB8C00" stroke-width="1.5"/>
+                <line x1="2" y1="18" x2="22" y2="18" stroke="#FB8C00" stroke-width="1.5" stroke-linecap="round"/>
+                <rect x="6" y="13" width="3" height="5" rx="0.5" fill="#FB8C00" opacity="0.55"/>
+                <rect x="16" y="13" width="3" height="3" rx="0.5" fill="#FB8C00" opacity="0.55"/>
+              </svg>
+            </div>
+            <div class="feature-label">Factory Products</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="8" height="8" rx="1.5" fill="#7B1FA2" opacity="0.18" stroke="#7B1FA2" stroke-width="1.3"/>
+                <rect x="13" y="3" width="8" height="8" rx="1.5" fill="#7B1FA2" opacity="0.18" stroke="#7B1FA2" stroke-width="1.3"/>
+                <rect x="3" y="13" width="8" height="8" rx="1.5" fill="#7B1FA2" opacity="0.18" stroke="#7B1FA2" stroke-width="1.3"/>
+                <rect x="13" y="13" width="8" height="8" rx="1.5" fill="#7B1FA2" opacity="0.7" stroke="#7B1FA2" stroke-width="1.3"/>
+                <line x1="15" y1="17" x2="19" y2="17" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+                <line x1="17" y1="15" x2="17" y2="19" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="feature-label">BOQ & Costing</div>
+          </div>
+        </div>
+
+        <!-- Product Category Cards -->
+        <div class="product-cards">
+          <div class="product-card" id="card-accommodation">
+            <img src="accommodation_module.jpg" alt="Accommodation Modules" />
+            <div class="product-card-body">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="8" width="10" height="13" rx="1" fill="#1976D2" opacity="0.15" stroke="#1976D2" stroke-width="1.4"/>
+                <rect x="13" y="4" width="9" height="17" rx="1" fill="#1976D2" opacity="0.15" stroke="#1976D2" stroke-width="1.4"/>
+                <line x1="2" y1="21" x2="22" y2="21" stroke="#1976D2" stroke-width="1.4" stroke-linecap="round"/>
+                <rect x="4" y="12" width="3" height="3" rx="0.5" fill="#1976D2" opacity="0.55"/>
+                <rect x="8" y="12" width="3" height="3" rx="0.5" fill="#1976D2" opacity="0.55"/>
+                <rect x="15" y="8" width="3" height="3" rx="0.5" fill="#1976D2" opacity="0.55"/>
+                <rect x="15" y="13" width="3" height="3" rx="0.5" fill="#1976D2" opacity="0.55"/>
+              </svg>
+              <div class="product-card-label">Accommodation<br/>Modules</div>
+            </div>
+          </div>
+          <div class="product-card" id="card-siteoffice">
+            <img src="site_office.jpg" alt="Site Offices" />
+            <div class="product-card-body">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="6" width="20" height="15" rx="1.5" fill="#1976D2" opacity="0.12" stroke="#1976D2" stroke-width="1.4"/>
+                <path d="M2 9h20" stroke="#1976D2" stroke-width="1.2"/>
+                <rect x="5" y="12" width="4" height="4" rx="0.5" fill="#1976D2" opacity="0.45"/>
+                <rect x="15" y="12" width="4" height="4" rx="0.5" fill="#1976D2" opacity="0.45"/>
+                <rect x="10" y="12" width="4" height="9" rx="0.5" fill="#1976D2" opacity="0.45"/>
+                <path d="M7 6V4h10v2" stroke="#1976D2" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="product-card-label">Site Offices</div>
+            </div>
+          </div>
+          <div class="product-card" id="card-healthcare">
+            <img src="healthcare_module.jpg" alt="Modular Healthcare Units" />
+            <div class="product-card-body">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="9" fill="#1976D2" opacity="0.12" stroke="#1976D2" stroke-width="1.4"/>
+                <path d="M12 8v8M8 12h8" stroke="#1976D2" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+              <div class="product-card-label">Modular Healthcare<br/>Units</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MIDDLE SPACER -->
+      <div class="middle-spacer"></div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right-panel">
+        <div class="login-card">
+
+          <!-- Card Logo -->
+          <div class="card-logo">
+            <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="17" height="17" rx="2" fill="#E8192C"/>
+              <rect x="20" y="0" width="20" height="20" rx="2" fill="#1A1A2E"/>
+              <rect x="0" y="20" width="20" height="20" rx="2" fill="#1A1A2E"/>
+              <rect x="23" y="23" width="13" height="13" rx="1.5" fill="#E8192C"/>
+            </svg>
+            <div class="logo-text-block">
+              <div class="card-logo-name">smar<span>D</span></div>
+              <div class="card-logo-sub">PREFAB | MODULAR | BUILDING SOLUTIONS</div>
+            </div>
+          </div>
+
+          <div class="card-title">Login to <span>Smard</span></div>
+          <p class="card-subtitle">Access the Quotation Assistant and Manage Your Modular Projects</p>
+
+          <!-- Email -->
+          <div class="form-group">
+            <span class="form-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="4" width="20" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 7l10 7 10-7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <input id="email-input" type="email" class="form-input" placeholder="Email Address" autocomplete="email" />
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <span class="form-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3" y="11" width="18" height="11" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="16" r="1.2" fill="currentColor"/>
+              </svg>
+            </span>
+            <input id="password-input" type="password" class="form-input" placeholder="Password" autocomplete="current-password" />
+            <button class="eye-btn" id="toggle-password" type="button" aria-label="Toggle password" onclick="togglePassword()">
+              <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Options Row -->
+          <div class="form-options">
+            <label class="remember-me" id="remember-label">
+              <input type="checkbox" id="remember-cb" checked />
+              <div class="custom-checkbox" id="custom-cb">
+                <svg viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="remember-label">Remember me</span>
+            </label>
+            <a href="#" class="forgot-link" id="forgot-password-link">Forgot Password?</a>
+          </div>
+
+          <!-- Login Button -->
+          <button class="btn-login" id="login-btn" type="button" onclick="handleLogin()">
+            Login
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="or-divider"><span>OR</span></div>
+
+          <button class="btn-microsoft" id="ms-login-btn" type="button">
+            <div class="ms-logo">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            Login with Microsoft
+          </button>
+
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="trust-badges">
+          <div class="trust-badge">
+            <div class="trust-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 2L3 6v6c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V6l-9-4z" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="trust-text">
+              <div class="trust-title">Secure Access</div>
+              <div class="trust-desc">Your data is protected</div>
+            </div>
+          </div>
+          <div class="trust-sep"></div>
+          <div class="trust-badge">
+            <div class="trust-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M2 18V10L8 6V10L14 6V18H2Z" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="14" y="10" width="8" height="8" rx="1" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="2" y1="18" x2="22" y2="18" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="trust-text">
+              <div class="trust-title">Factory Backed</div>
+              <div class="trust-desc">Real product information</div>
+            </div>
+          </div>
+          <div class="trust-sep"></div>
+          <div class="trust-badge">
+            <div class="trust-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="9" cy="7" r="3" stroke-linecap="round"/>
+                <path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 3.13a4 4 0 010 7.75" stroke-linecap="round"/>
+                <path d="M21 21v-2a4 4 0 00-3-3.87" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="trust-text">
+              <div class="trust-title">For Professionals</div>
+              <div class="trust-desc">Built for project teams</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function togglePassword() {
+    const input = document.getElementById('password-input');
+    const icon = document.getElementById('eye-icon');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.innerHTML = `
+        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="1" y1="1" x2="23" y2="23" stroke-linecap="round" stroke="currentColor" stroke-width="1.8"/>
+      `;
+    } else {
+      input.type = 'password';
+      icon.innerHTML = `
+        <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="1.8"/>
+      `;
+    }
+  }
+
+  const rememberLabel = document.getElementById('remember-label');
+  rememberLabel.addEventListener('click', function() {
+    const cb = document.getElementById('remember-cb');
+    const box = document.getElementById('custom-cb');
+    if (cb.checked) {
+      box.style.background = '#fff';
+      box.style.border = '1.5px solid #CBD5E1';
+      box.querySelector('svg path').style.opacity = '0';
+    } else {
+      box.style.background = 'var(--blue2)';
+      box.style.border = 'none';
+      box.querySelector('svg path').style.opacity = '1';
+    }
+  });
+
+  function handleLogin() {
+    const btn = document.getElementById('login-btn');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="9" stroke-dasharray="57" stroke-dashoffset="57" style="animation:spin 1s linear infinite"></circle></svg> Logging in...';
+    btn.style.opacity = '0.85';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.innerHTML = 'Login <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }, 2000);
+  }
+</script>
+
+</body>
+</html>
