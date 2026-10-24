@@ -1,0 +1,1118 @@
+@model Smard.Models.RegisterUserViewModel
+@{
+    ViewData["Title"] = "Register User – SmarD Admin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadStyles {
+    <meta name="description" content="Register new users for the SmarD platform securely." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --red: #E8192C;
+            --blue: #1565C0;
+            --blue2: #1976D2;
+            --dark: #1A1A2E;
+            --gray: #64748B;
+            --border: #E2E8F0;
+            --sidebar-w: 240px;
+            --sidebar-collapsed-w: 62px;
+            --sidebar-bg: #FAFAFF;
+            --sidebar-active: #EEF2FF;
+            --sidebar-hover: #F1F5F9;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #F8FAFC;
+        }
+
+        /* =============================================
+           LEFT SIDEBAR — 3-section fixed layout
+        ============================================= */
+        .dash-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-w);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            border-right: 1.5px solid var(--border);
+            box-shadow: 2px 0 12px rgba(0,0,0,0.04);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+            overflow: hidden;
+        }
+        .dash-sidebar.collapsed { width: var(--sidebar-collapsed-w); }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 13px;
+            border-bottom: 1.5px solid var(--border);
+            min-height: 56px;
+            overflow: hidden;
+        }
+        .sidebar-hamburger {
+            width: 36px; height: 36px; border-radius: 10px;
+            border: none; background: transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s, transform 0.15s;
+            flex-shrink: 0;
+        }
+        .sidebar-hamburger:hover { background: #E2E8F0; }
+        .sidebar-hamburger:active { transform: scale(0.93); }
+        .sidebar-hamburger svg { width: 22px; height: 22px; color: var(--dark); }
+        .sidebar-logo-text {
+            flex-shrink: 0; white-space: nowrap;
+            transition: opacity 0.2s, max-width 0.3s;
+            max-width: 160px; overflow: hidden;
+        }
+        .dash-sidebar.collapsed .sidebar-logo-text { opacity: 0; max-width: 0; display: none; }
+
+        .sidebar-nav {
+            flex: 1 1 0;
+            min-height: 0;
+            padding: 10px 8px 10px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: #CBD5E1 transparent;
+            -webkit-overflow-scrolling: touch;
+        }
+        .sidebar-nav-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; border-radius: 10px;
+            font-size: 14px; font-weight: 600;
+            color: var(--dark); text-decoration: none;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            cursor: pointer; border: none; background: none;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap; overflow: hidden;
+            flex-shrink: 0; position: relative;
+        }
+        .sidebar-nav-link:hover {
+            background: var(--sidebar-hover); color: var(--blue);
+        }
+        .sidebar-nav-link.active {
+            background: var(--sidebar-active); color: var(--blue);
+            box-shadow: inset 3px 0 0 var(--blue);
+        }
+        .sidebar-nav-link svg.nav-icon {
+            width: 22px; height: 22px; flex-shrink: 0;
+        }
+        .sidebar-nav-link .nav-label {
+            transition: opacity 0.2s, max-width 0.3s;
+            overflow: hidden; max-width: 160px;
+        }
+        .dash-sidebar.collapsed .sidebar-nav-link .nav-label {
+            opacity: 0; max-width: 0;
+        }
+        .sidebar-nav-link .nav-chevron {
+            margin-left: auto; width: 14px; height: 14px;
+            color: var(--gray); transition: transform 0.25s, opacity 0.2s;
+            flex-shrink: 0;
+        }
+        .sidebar-nav-link .nav-chevron.rotated { transform: rotate(90deg); }
+        .dash-sidebar.collapsed .sidebar-nav-link .nav-chevron { opacity: 0; width: 0; }
+
+        .sidebar-nav-link .nav-tooltip {
+            display: none; position: absolute; left: calc(100% + 10px); top: 50%;
+            transform: translateY(-50%); background: var(--dark); color: #fff;
+            padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+            white-space: nowrap; z-index: 200; pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .dash-sidebar.collapsed .sidebar-nav-link:hover .nav-tooltip { display: block; }
+
+        .sidebar-nav::-webkit-scrollbar { width: 5px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        .nav-submenu-wrapper {
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+            max-height: 9999px;
+            opacity: 1;
+        }
+        .nav-submenu-wrapper.closed {
+            max-height: 0;
+            opacity: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .dash-sidebar.collapsed .nav-submenu-wrapper { display: none !important; }
+
+        .nav-submenu {
+            list-style: none; padding: 2px 0 4px 0; margin: 0;
+            display: flex; flex-direction: column; gap: 1px;
+        }
+        .nav-submenu-item { list-style: none; margin: 0; }
+        .nav-sublink {
+            display: flex; align-items: center; gap: 10px;
+            padding: 5px 12px 5px 38px; font-size: 13px; font-weight: 500;
+            color: #475569; text-decoration: none; border-radius: 7px;
+            transition: all 0.15s ease; white-space: nowrap;
+            position: relative; font-family: 'Inter', sans-serif; cursor: pointer;
+        }
+        .nav-sublink:hover { color: var(--blue); background: #F1F5F9; padding-left: 42px; }
+        .nav-sublink.active { color: var(--blue); font-weight: 600; background: #EFF6FF; }
+        .sub-bullet { width: 6px; height: 6px; border-radius: 50%; background: #94A3B8; flex-shrink: 0; }
+
+        .sidebar-footer {
+            padding: 14px 16px; border-top: 1.5px solid var(--border);
+            font-size: 11px; color: var(--gray); text-align: center;
+            background: var(--sidebar-bg); flex-shrink: 0;
+            white-space: nowrap; overflow: hidden;
+            transition: opacity 0.2s, max-height 0.3s;
+        }
+        .dash-sidebar.collapsed .sidebar-footer { opacity: 0; max-height: 0; padding: 0; }
+
+        /* SMARD LOGO TOP LEFT */
+        .smard-logo-fixed {
+            position: fixed; top: 12px; left: 80px; height: 32px; width: auto;
+            z-index: 45; transition: left 0.3s cubic-bezier(0.4,0,0.2,1);
+            pointer-events: none;
+        }
+
+        /* TOP-RIGHT PROFILE */
+        .topright-profile { position: fixed; top: 14px; right: 28px; z-index: 60; }
+        .profile-btn {
+            display: flex; align-items: center; gap: 10px;
+            padding: 6px 14px 6px 8px; background: #fff;
+            border: 1.5px solid var(--border); border-radius: 50px;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            font-family: 'Inter', sans-serif;
+        }
+        .profile-btn:hover { background: #F1F5F9; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .profile-avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue), var(--blue2));
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 13px; font-weight: 700; flex-shrink: 0;
+        }
+        .profile-btn-name { font-size: 13px; font-weight: 600; color: var(--dark); }
+        .profile-btn-chevron { width: 14px; height: 14px; color: var(--gray); margin-left: 2px; }
+
+        .profile-dropdown {
+            display: none; position: absolute; top: 50px; right: 0;
+            background: #fff; border: 1.5px solid var(--border); border-radius: 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15); min-width: 240px; z-index: 100;
+            overflow: hidden;
+        }
+        .profile-dropdown.show { display: block; }
+        .profile-dd-header {
+            padding: 16px 18px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .profile-dd-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue), var(--blue2));
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 15px; font-weight: 700; flex-shrink: 0;
+        }
+        .profile-dd-info { display: flex; flex-direction: column; overflow: hidden; }
+        .profile-dd-name { font-size: 14px; font-weight: 700; color: var(--dark); }
+        .profile-dd-email { font-size: 12px; color: var(--gray); overflow: hidden; text-overflow: ellipsis; }
+        .profile-dd-actions { padding: 6px 0; }
+        .profile-dd-btn {
+            width: 100%; padding: 11px 18px; background: none; border: none;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            font-family: 'Inter', sans-serif; text-align: left;
+            display: flex; align-items: center; gap: 10px; transition: background .2s;
+        }
+        .profile-dd-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .profile-dd-btn.signout { color: #DC2626; }
+        .profile-dd-btn.signout:hover { background: #FEF2F2; }
+
+        /* =============================================
+           MAIN REGISTRATION PAGE LAYOUT
+        ============================================= */
+        .dash-main-wrapper {
+            margin-left: var(--sidebar-w);
+            height: 100vh;
+            overflow-y: auto;
+            transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+            background: #F8FAFC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px 40px;
+        }
+        .dash-main-wrapper.collapsed { margin-left: var(--sidebar-collapsed-w); }
+
+        .reg-container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            max-width: 980px;
+            width: 100%;
+            gap: 32px;
+            margin: auto 0;
+        }
+
+        /* ── HERO CARD (LEFT) ── */
+        .hero-card {
+            flex: 1 1 45%;
+            min-width: 340px;
+            max-width: 460px;
+            background: linear-gradient(155deg, #1b0e3e 0%, #29115d 35%, #380e72 65%, #180933 100%);
+            border-radius: 28px;
+            padding: 44px 40px 48px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 24px 50px -12px rgba(24, 9, 51, 0.45);
+            color: #ffffff;
+        }
+
+        /* Ambient Glows */
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.38) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            left: -50px;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.28) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-top {
+            position: relative;
+            z-index: 2;
+        }
+        .hero-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+        .hero-brand-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .hero-brand-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .hero-middle {
+            position: relative;
+            z-index: 2;
+            margin-top: 100px;
+            margin-bottom: 24px;
+        }
+        .hero-title {
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1.18;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+        }
+        .hero-subtitle {
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: #C7D2FE;
+            max-width: 360px;
+            margin-bottom: 34px;
+            font-weight: 400;
+        }
+
+        .hero-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .hero-feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #F1F5F9;
+        }
+        .hero-check-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.4);
+            border: 1px solid rgba(196, 181, 253, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #E0E7FF;
+            flex-shrink: 0;
+        }
+        .hero-check-badge svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* ── FORM CARD (RIGHT) ── */
+        .form-card {
+            flex: 1 1 55%;
+            min-width: 360px;
+            max-width: 500px;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 40px 42px;
+            border: 1.5px solid #E2E8F0;
+            box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.08);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: #EEF2FF;
+            color: #4F46E5;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            border-radius: 9999px;
+            width: fit-content;
+            margin-bottom: 12px;
+        }
+
+        .form-header-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: -0.4px;
+            margin-bottom: 6px;
+        }
+        .form-header-subtitle {
+            font-size: 13.5px;
+            color: #64748B;
+            margin-bottom: 22px;
+        }
+
+        .role-notice-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: #F0FDF4;
+            border: 1px solid #DCFCE7;
+            border-radius: 9px;
+            color: #15803D;
+            font-size: 12.5px;
+            font-weight: 600;
+            margin-bottom: 22px;
+            width: fit-content;
+        }
+        .role-notice-pill svg {
+            flex-shrink: 0;
+        }
+
+        .alert-success-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #ECFDF5;
+            border: 1.5px solid #A7F3D0;
+            border-radius: 12px;
+            color: #065F46;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .alert-error-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #FEF2F2;
+            border: 1.5px solid #FECACA;
+            border-radius: 12px;
+            color: #991B1B;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 18px;
+        }
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 7px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: #94A3B8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .input-icon svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 44px;
+            padding: 10px 14px 10px 42px;
+            background: #FFFFFF;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 13.5px;
+            color: #0F172A;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .form-input::placeholder {
+            color: #94A3B8;
+            font-weight: 400;
+        }
+        .form-input:hover {
+            border-color: #CBD5E1;
+        }
+        .form-input:focus {
+            border-color: #6366F1;
+            box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.14);
+        }
+        .form-input.input-validation-error {
+            border-color: #EF4444;
+            background-color: #FFFDFD;
+        }
+        .form-input.has-toggle {
+            padding-right: 42px;
+        }
+        .form-input.form-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding-right: 42px;
+            cursor: pointer;
+            background-color: #FFFFFF;
+        }
+        .select-chevron {
+            position: absolute;
+            right: 14px;
+            pointer-events: none;
+            color: #94A3B8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .select-chevron svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .eye-toggle-btn {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: #94A3B8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s ease;
+            border-radius: 6px;
+        }
+        .eye-toggle-btn:hover {
+            color: #475569;
+        }
+        .eye-toggle-btn svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        .password-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 2px;
+        }
+
+        .field-error {
+            color: #DC2626;
+            font-size: 11.5px;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        .pwd-helper-note {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            color: #64748B;
+            margin-top: 6px;
+            margin-bottom: 22px;
+            font-weight: 500;
+        }
+        .pwd-helper-note svg {
+            color: #6366F1;
+            flex-shrink: 0;
+            width: 14px;
+            height: 14px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, #6366F1 0%, #7C3AED 100%);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 14.5px;
+            font-weight: 700;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            cursor: pointer;
+            box-shadow: 0 10px 24px -4px rgba(99, 102, 241, 0.45);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .submit-btn:hover {
+            transform: translateY(-1.5px);
+            box-shadow: 0 14px 28px -4px rgba(99, 102, 241, 0.55);
+            background: linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%);
+        }
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        .submit-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .back-dashboard-row {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-dashboard-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: #64748B;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .back-dashboard-link:hover {
+            color: #0F172A;
+        }
+        .back-dashboard-link svg {
+            width: 15px;
+            height: 15px;
+            transition: transform 0.15s ease;
+        }
+        .back-dashboard-link:hover svg {
+            transform: translateX(-3px);
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive breakpoints */
+        @@media (max-width: 900px) {
+            .reg-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .hero-card, .form-card {
+                max-width: 100%;
+                width: 100%;
+            }
+            .hero-middle {
+                margin-top: 40px;
+            }
+            .password-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}
+
+<!-- LEFT SIDEBAR -->
+<aside class="dash-sidebar" id="sidebar">
+    <!-- Sidebar Header: Hamburger + Logo Text -->
+    <div class="sidebar-header">
+        <button class="sidebar-hamburger" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6" stroke-linecap="round"/>
+                <line x1="3" y1="12" x2="21" y2="12" stroke-linecap="round"/>
+                <line x1="3" y1="18" x2="21" y2="18" stroke-linecap="round"/>
+            </svg>
+        </button>
+        <img src="/images/Smard_Logo.png" alt="SmarD Logo" class="sidebar-logo-text" style="height:30px;width:auto;" />
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav">
+        <!-- Home -->
+        <a class="sidebar-nav-link" href="/Account/RequestQuotation">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 22V12h6v10" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="nav-label">Home</span>
+            <span class="nav-tooltip">Home</span>
+        </a>
+
+        @if (User.IsAdmin())
+        {
+            <!-- User Registration (Active on this page) -->
+            <a class="sidebar-nav-link active" id="user-registration-link" href="/Account/RegisterUser">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm9-4V7h-2v2h-2v2h2v2h2v-2h2V9h-2z"/>
+                </svg>
+                <span class="nav-label">User Registration</span>
+                <span class="nav-tooltip">User Registration</span>
+            </a>
+        }
+
+        <!-- Masters -->
+        <a class="sidebar-nav-link" id="masters-link" href="javascript:void(0);" onclick="toggleMasters(event)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="nav-label">Masters</span>
+            <svg class="nav-chevron" id="masters-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="nav-tooltip">Masters</span>
+        </a>
+
+        <!-- Masters Submenu -->
+        <div class="nav-submenu-wrapper closed" id="masters-submenu">
+            <ul class="nav-submenu">
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/WallPanelSystem"><span class="sub-bullet"></span>Wall Panel System</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/CeilingSystem"><span class="sub-bullet"></span>Ceiling System</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/PeripheralLight"><span class="sub-bullet"></span>Peripheral Light</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/LaminarFlow"><span class="sub-bullet"></span>Laminar Flow</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/AVSU"><span class="sub-bullet"></span>AVSU</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/Doors"><span class="sub-bullet"></span>Doors</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/StorageCabinet"><span class="sub-bullet"></span>Storage Cabinet</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/Sink"><span class="sub-bullet"></span>Sink</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/WorkStation"><span class="sub-bullet"></span>Work Station</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/BHU"><span class="sub-bullet"></span>BHU</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/ReturnAirSystem"><span class="sub-bullet"></span>Return Air System</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/Windows"><span class="sub-bullet"></span>Windows</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/Counters"><span class="sub-bullet"></span>Counters</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/LGSPanelSystem"><span class="sub-bullet"></span>LGS Panel System</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/FixedFurnitures"><span class="sub-bullet"></span>Fixed Furnitures</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/LooseFurnitures"><span class="sub-bullet"></span>Loose Furnitures</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/CSSDAFurnitures"><span class="sub-bullet"></span>CSSD Furnitures</a></li>
+                <li class="nav-submenu-item"><a class="nav-sublink" href="/JobWorks"><span class="sub-bullet"></span>Job Works</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sidebar Footer: Version -->
+    <div class="sidebar-footer">
+        Version: 1.0.0<br/>
+        Copyright &copy; 2026.
+    </div>
+</aside>
+
+<!-- SMARD LOGO FIXED -->
+<img src="/images/Smard_Logo.png" alt="SmarD Logo" class="smard-logo-fixed" id="smard-logo-fixed" />
+
+<!-- TOP-RIGHT PROFILE & NOTIFICATIONS -->
+<partial name="_TopRightProfile" />
+
+
+<!-- MAIN CONTENT WRAPPER -->
+<div class="dash-main-wrapper" id="main-wrapper">
+    <div class="reg-container">
+
+        <!-- LEFT HERO CARD -->
+        <div class="hero-card">
+            <div class="hero-top">
+                <div class="hero-brand">
+                    <span class="hero-brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </span>
+                    <span class="hero-brand-name">Smard Admin</span>
+                </div>
+            </div>
+
+            <div class="hero-middle">
+                <h1 class="hero-title">Bring your team<br/>on board, securely.</h1>
+                <p class="hero-subtitle">
+                    Create accounts for new team members and get them access in seconds &mdash; no self-signup required.
+                </p>
+
+                <ul class="hero-features">
+                    <li class="hero-feature-item">
+                        <span class="hero-check-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <span>Automatic role assignment</span>
+                    </li>
+                    <li class="hero-feature-item">
+                        <span class="hero-check-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <span>Enforced password strength</span>
+                    </li>
+                    <li class="hero-feature-item">
+                        <span class="hero-check-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </span>
+                        <span>Instant account activation</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- RIGHT FORM CARD -->
+        <div class="form-card">
+            <div class="admin-pill">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm9-4V7h-2v2h-2v2h2v2h2v-2h2V9h-2z"/>
+                </svg>
+                <span>ADMIN PANEL</span>
+            </div>
+
+            <h2 class="form-header-title">Register New User</h2>
+            <p class="form-header-subtitle">Fill in the details below to create a new account.</p>
+
+            <div class="role-notice-pill" id="roleNoticePill">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <span id="roleNoticeText">Will be assigned "User" role</span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+            {
+                <div class="alert-success-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <span>@ViewBag.SuccessMessage</span>
+                </div>
+            }
+
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState[""]?.Errors.Count > 0)
+            {
+                <div class="alert-error-banner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>@Html.ValidationSummary(true, "")</span>
+                </div>
+            }
+
+            <form asp-controller="Account" asp-action="RegisterUser" method="post" novalidate>
+                @Html.AntiForgeryToken()
+
+                <!-- Full Name -->
+                <div class="form-group">
+                    <label asp-for="FullName" class="form-label">Full Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </span>
+                        <input asp-for="FullName" class="form-input" placeholder="Sudeep " autocomplete="name" required />
+                    </div>
+                    <span asp-validation-for="FullName" class="field-error"></span>
+                </div>
+
+                <!-- User Type / Role Dropdown -->
+                <div class="form-group">
+                    <label asp-for="UserType" class="form-label">User Type / Role</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </span>
+                        <select asp-for="UserType" class="form-input form-select" id="userTypeSelect" onchange="onRoleChange(this.value)" required>
+                            <option value="User">Normal User</option>
+                            <option value="Manager">Manager</option>
+                        </select>
+                        <span class="select-chevron">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </span>
+                    </div>
+                    <span asp-validation-for="UserType" class="field-error"></span>
+                </div>
+
+                <!-- Email Address -->
+                <div class="form-group">
+                    <label asp-for="Email" class="form-label">Email Address</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                        </span>
+                        <input asp-for="Email" type="email" class="form-input" placeholder="sudeep@smard.com" autocomplete="email" required />
+                    </div>
+                    <span asp-validation-for="Email" class="field-error"></span>
+                </div>
+
+                <!-- Password and Confirm Password Row -->
+                <div class="password-row">
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                            </span>
+                            <input asp-for="Password" type="password" id="passInput" class="form-input has-toggle" placeholder="••••••••" autocomplete="new-password" required />
+                            <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('passInput', this)" title="Toggle password visibility">
+                                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-closed" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="field-error"></span>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                            </span>
+                            <input asp-for="ConfirmPassword" type="password" id="confirmPassInput" class="form-input has-toggle" placeholder="••••••••" autocomplete="new-password" required />
+                            <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('confirmPassInput', this)" title="Toggle password visibility">
+                                <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="eye-closed" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+                    </div>
+                </div>
+
+                <!-- Helper Note -->
+                <div class="pwd-helper-note">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    <span>Min 8 characters, 1 number, 1 uppercase letter</span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm9-4V7h-2v2h-2v2h2v2h2v-2h2V9h-2z"/>
+                    </svg>
+                    <span>Register User</span>
+                </button>
+
+                <!-- Back to Dashboard -->
+                <div class="back-dashboard-row">
+                    <a href="/Account/RequestQuotation" class="back-dashboard-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"/>
+                            <polyline points="12 19 5 12 12 5"/>
+                        </svg>
+                        <span>Back to Dashboard</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function toggleSidebar() {
+        var sidebar = document.getElementById('sidebar');
+        var main = document.getElementById('main-wrapper');
+        var logo = document.getElementById('smard-logo-fixed');
+        sidebar.classList.toggle('collapsed');
+        main.classList.toggle('collapsed');
+        if (logo) {
+            logo.style.left = sidebar.classList.contains('collapsed') ? '80px' : '258px';
+        }
+    }
+
+    function toggleMasters(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        var sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('collapsed')) {
+            toggleSidebar();
+            var submenu = document.getElementById('masters-submenu');
+            var chevron = document.getElementById('masters-chevron');
+            if (submenu) submenu.classList.remove('closed');
+            if (chevron) chevron.classList.remove('closed');
+            return;
+        }
+
+        var submenu = document.getElementById('masters-submenu');
+        var chevron = document.getElementById('masters-chevron');
+        if (submenu) submenu.classList.toggle('closed');
+        if (chevron) chevron.classList.toggle('closed');
+    }
+
+    function toggleProfileMenu() {
+        var dd = document.getElementById('profile-dropdown');
+        if (dd) dd.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+        var profileArea = document.getElementById('profile-area');
+        if (profileArea && !profileArea.contains(e.target)) {
+            var dd = document.getElementById('profile-dropdown');
+            if (dd) dd.classList.remove('show');
+        }
+    });
+
+    function togglePasswordVisibility(inputId, btn) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        var eyeOpen = btn.querySelector('.eye-open');
+        var eyeClosed = btn.querySelector('.eye-closed');
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (eyeOpen) eyeOpen.style.display = 'none';
+            if (eyeClosed) eyeClosed.style.display = 'block';
+        } else {
+            input.type = 'password';
+            if (eyeOpen) eyeOpen.style.display = 'block';
+            if (eyeClosed) eyeClosed.style.display = 'none';
+        }
+    }
+
+    function onRoleChange(val) {
+        var pillText = document.getElementById('roleNoticeText');
+        if (!pillText) return;
+        if (val === 'Manager') {
+            pillText.textContent = 'Will be assigned "Manager" role';
+        } else {
+            pillText.textContent = 'Will be assigned "User" role';
+        }
+    }
+
+    // Initialize pill text based on current select value
+    document.addEventListener('DOMContentLoaded', function () {
+        var sel = document.getElementById('userTypeSelect');
+        if (sel) {
+            onRoleChange(sel.value);
+        }
+    });
+</script>
+}
